@@ -1,41 +1,116 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ClerkProvider, SignIn, SignUp, useAuth } from "@clerk/react";
+import { publishableKeyFromHost } from '@clerk/react/internal';
 import NotFound from "@/pages/not-found";
+import Home from "@/pages/home";
+import Browse from "@/pages/browse";
+import Watch from "@/pages/watch";
+import Upload from "@/pages/upload";
+import Subscription from "@/pages/subscription";
+import Profile from "@/pages/profile";
+import { useEffect } from "react";
+import { setAuthTokenGetter } from "@workspace/api-client-react";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: 1, staleTime: 30_000 },
+  },
+});
 
-function Home() {
+const clerkPubKey = publishableKeyFromHost(
+  window.location.hostname,
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+);
+const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+function stripBase(path: string): string {
+  return basePath && path.startsWith(basePath)
+    ? path.slice(basePath.length) || "/"
+    : path;
+}
+
+function SignInPage() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Replit Agent is building...</h1>
-        <p className="mt-2 text-sm text-gray-600">Your app will appear here once it's ready.</p>
-      </div>
+    <div className="flex min-h-[100dvh] items-center justify-center bg-[#0f0f0f] px-4">
+      <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
     </div>
   );
+}
+
+function SignUpPage() {
+  return (
+    <div className="flex min-h-[100dvh] items-center justify-center bg-[#0f0f0f] px-4">
+      <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
+    </div>
+  );
+}
+
+function AuthListener() {
+  const { getToken } = useAuth();
+  useEffect(() => {
+    setAuthTokenGetter(() => getToken());
+  }, [getToken]);
+  return null;
 }
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/browse" component={Browse} />
+      <Route path="/watch/:id" component={Watch} />
+      <Route path="/upload" component={Upload} />
+      <Route path="/subscription" component={Subscription} />
+      <Route path="/profile" component={Profile} />
+      <Route path="/sign-in/*?" component={SignInPage} />
+      <Route path="/sign-up/*?" component={SignUpPage} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
 function App() {
+  if (!clerkPubKey) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#0f0f0f] text-white">
+        <p>Konfigurasi Clerk tidak ditemukan</p>
+      </div>
+    );
+  }
+
+  const [, setLocation] = useLocation();
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ClerkProvider
+      publishableKey={clerkPubKey}
+      proxyUrl={clerkProxyUrl}
+      signInUrl={`${basePath}/sign-in`}
+      signUpUrl={`${basePath}/sign-up`}
+      routerPush={(to) => setLocation(stripBase(to))}
+      routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
+      appearance={{
+        variables: {
+          colorPrimary: "hsl(355, 83%, 41%)",
+          colorBackground: "hsl(0, 0%, 6%)",
+          colorInputBackground: "hsl(0, 0%, 15%)",
+          colorText: "white",
+        },
+      }}
+    >
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <AuthListener />
+          <WouterRouter base={basePath}>
+            <Router />
+          </WouterRouter>
+          <Toaster />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ClerkProvider>
   );
 }
 

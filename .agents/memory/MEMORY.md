@@ -1,0 +1,3 @@
+- [Clerk v6 compatibility](clerk-v6-compat.md) — `SignedIn`/`SignedOut` not exported; use `useAuth()` conditional rendering instead
+- [API hook signatures](api-hook-signatures.md) — Orval-generated query hooks take positional `id: number`, not `{ id }` objects; mutations take `{ data }` wrapper
+- [Stripe graceful fallback](stripe-graceful.md) — subscription routes work without Stripe; never block features or re-propose Stripe setup
