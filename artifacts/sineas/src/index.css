@@ -98,6 +98,34 @@
   --app-font-mono: 'Menlo', monospace;
 }
 
+/* Light theme overrides */
+html.light {
+  --background: 0 0% 97%;
+  --foreground: 0 0% 9%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 9%;
+  --card-border: 0 0% 88%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 9%;
+  --popover-border: 0 0% 88%;
+  --muted: 0 0% 92%;
+  --muted-foreground: 0 0% 40%;
+  --accent: 0 0% 92%;
+  --accent-foreground: 0 0% 9%;
+  --border: 0 0% 88%;
+  --input: 0 0% 88%;
+}
+
+html.light body {
+  background-color: hsl(0, 0%, 97%);
+  color: hsl(0, 0%, 9%);
+}
+
+/* Light mode page backgrounds */
+html.light .min-h-screen.bg-\[#0f0f0f\] {
+  background-color: hsl(0, 0%, 97%) !important;
+}
+
 @layer base {
   * {
     @apply border-border;

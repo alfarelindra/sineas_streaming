@@ -1,9 +1,11 @@
 import { Link, useLocation } from "wouter";
 import { useAuth, UserButton } from "@clerk/react";
-import { Search, Upload, Menu, X, Film } from "lucide-react";
+import { Search, Upload, Menu, X, Film, Sun, Moon, LayoutDashboard } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useTheme } from "@/components/ThemeProvider";
+import NotificationBell from "@/components/NotificationBell";
 
 function SignedIn({ children }: { children: React.ReactNode }) {
   const { isSignedIn } = useAuth();
@@ -24,6 +26,7 @@ export default function Navbar({ onSearch }: NavbarProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchVal, setSearchVal] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const { theme, toggle } = useTheme();
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -37,17 +40,21 @@ export default function Navbar({ onSearch }: NavbarProps) {
     { href: "/subscription", label: "Berlangganan" },
   ];
 
+  const bg = scrolled
+    ? theme === "dark"
+      ? "bg-black/95 backdrop-blur-md shadow-lg"
+      : "bg-white/95 backdrop-blur-md shadow-lg"
+    : "bg-gradient-to-b from-black/80 to-transparent";
+
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "bg-black/95 backdrop-blur-md shadow-lg" : "bg-gradient-to-b from-black/80 to-transparent"
-      }`}
-    >
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${bg}`}>
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
             <Film className="w-7 h-7 text-red-500" />
-            <span className="text-2xl font-black tracking-tight text-white">SINEAS</span>
+            <span className={`text-2xl font-black tracking-tight ${theme === "light" && scrolled ? "text-gray-900" : "text-white"}`}>
+              SINEAS
+            </span>
           </Link>
 
           <div className="hidden md:flex items-center gap-6 ml-8">
@@ -56,7 +63,9 @@ export default function Navbar({ onSearch }: NavbarProps) {
                 key={l.href}
                 href={l.href}
                 className={`text-sm font-medium transition-colors ${
-                  location === l.href ? "text-white" : "text-gray-400 hover:text-white"
+                  location === l.href
+                    ? theme === "light" && scrolled ? "text-gray-900" : "text-white"
+                    : "text-gray-400 hover:text-white"
                 }`}
               >
                 {l.label}
@@ -64,7 +73,7 @@ export default function Navbar({ onSearch }: NavbarProps) {
             ))}
           </div>
 
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-1 ml-auto">
             {searchOpen ? (
               <form
                 className="flex items-center gap-2"
@@ -91,7 +100,21 @@ export default function Navbar({ onSearch }: NavbarProps) {
               </button>
             )}
 
+            {/* Theme toggle */}
+            <button onClick={toggle} className="text-gray-300 hover:text-white p-2 transition-colors" title="Ganti tema">
+              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+
+            {/* Notifications */}
+            <NotificationBell />
+
             <SignedIn>
+              <Link href="/dashboard" className="hidden sm:block">
+                <Button size="sm" variant="ghost" className="text-gray-300 hover:text-white gap-1">
+                  <LayoutDashboard className="w-4 h-4" />
+                  <span className="text-xs">Dashboard</span>
+                </Button>
+              </Link>
               <Link href="/upload">
                 <Button size="sm" variant="ghost" className="text-gray-300 hover:text-white hidden sm:flex gap-1">
                   <Upload className="w-4 h-4" />
@@ -121,23 +144,13 @@ export default function Navbar({ onSearch }: NavbarProps) {
         {menuOpen && (
           <div className="md:hidden bg-black/95 pb-4 pt-2 border-t border-white/10">
             {navLinks.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className="block px-4 py-2 text-sm text-gray-300 hover:text-white"
-                onClick={() => setMenuOpen(false)}
-              >
+              <Link key={l.href} href={l.href} className="block px-4 py-2 text-sm text-gray-300 hover:text-white" onClick={() => setMenuOpen(false)}>
                 {l.label}
               </Link>
             ))}
             <SignedIn>
-              <Link
-                href="/upload"
-                className="block px-4 py-2 text-sm text-gray-300 hover:text-white"
-                onClick={() => setMenuOpen(false)}
-              >
-                Upload Video
-              </Link>
+              <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-300 hover:text-white" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+              <Link href="/upload" className="block px-4 py-2 text-sm text-gray-300 hover:text-white" onClick={() => setMenuOpen(false)}>Upload Video</Link>
             </SignedIn>
           </div>
         )}

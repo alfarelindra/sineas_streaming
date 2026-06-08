@@ -1,13 +1,15 @@
-import { useListVideos, useGetTrendingVideos, useGetFeaturedVideos } from "@workspace/api-client-react";
+import { useListVideos, useGetTrendingVideos, useGetFeaturedVideos, useGetContinueWatching } from "@workspace/api-client-react";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import VideoRow from "@/components/VideoRow";
-import { useState } from "react";
 import { useLocation } from "wouter";
+import { useAuth } from "@clerk/react";
+import { Play, Clock } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Home() {
   const [, setLocation] = useLocation();
-  const [search, setSearch] = useState("");
+  const { isSignedIn } = useAuth();
 
   const { data: featured, isLoading: loadingFeatured } = useGetFeaturedVideos();
   const { data: trending, isLoading: loadingTrending } = useGetTrendingVideos({ limit: 12 });
@@ -16,6 +18,7 @@ export default function Home() {
   const { data: aksiData, isLoading: loadingAksi } = useListVideos({ genre: "Aksi", limit: 12 });
   const { data: hororData } = useListVideos({ genre: "Horor", limit: 12 });
   const { data: animasiData } = useListVideos({ genre: "Animasi", limit: 12 });
+  const { data: continueWatching } = useGetContinueWatching();
 
   const heroVideo = featured?.[0] ?? trending?.[0];
 
@@ -35,26 +38,49 @@ export default function Home() {
 
       {/* Content rows */}
       <div className="pb-16 pt-4">
-        <VideoRow
-          title="Sedang Trending"
-          videos={(trending ?? []) as any[]}
-          loading={loadingTrending}
-        />
-        <VideoRow
-          title="Terbaru"
-          videos={(latestData?.videos ?? []) as any[]}
-          loading={loadingLatest}
-        />
-        <VideoRow
-          title="Drama Pilihan"
-          videos={(dramaData?.videos ?? []) as any[]}
-          loading={loadingDrama}
-        />
-        <VideoRow
-          title="Film Aksi"
-          videos={(aksiData?.videos ?? []) as any[]}
-          loading={loadingAksi}
-        />
+        {/* Continue Watching */}
+        {isSignedIn && (continueWatching ?? []).length > 0 && (
+          <div className="mb-10">
+            <h2 className="text-lg sm:text-xl font-bold text-white mb-3 px-6 sm:px-10 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-red-400" />
+              Lanjutkan Menonton
+            </h2>
+            <div className="flex gap-3 overflow-x-auto px-6 sm:px-10 pb-2 scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+              {(continueWatching ?? []).map((v: any) => (
+                <Link key={v.id} href={`/watch/${v.id}`} className="group flex-shrink-0 w-48 sm:w-56">
+                  <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-900">
+                    {v.thumbnailUrl ? (
+                      <img src={v.thumbnailUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-800">
+                        <Play className="w-8 h-8 text-gray-600" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/20 backdrop-blur-sm rounded-full p-3">
+                        <Play className="w-5 h-5 text-white fill-white" />
+                      </div>
+                    </div>
+                    {/* Progress bar */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
+                      <div
+                        className="h-full bg-red-500"
+                        style={{ width: `${Math.min(100, v.progressPercent ?? 0)}%` }}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-sm font-semibold text-white mt-2 line-clamp-1 group-hover:text-red-400 transition-colors">{v.title}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{v.progressPercent ? `${Math.round(v.progressPercent)}% selesai` : "Mulai dari awal"}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <VideoRow title="Sedang Trending" videos={(trending ?? []) as any[]} loading={loadingTrending} />
+        <VideoRow title="Terbaru" videos={(latestData?.videos ?? []) as any[]} loading={loadingLatest} />
+        <VideoRow title="Drama Pilihan" videos={(dramaData?.videos ?? []) as any[]} loading={loadingDrama} />
+        <VideoRow title="Film Aksi" videos={(aksiData?.videos ?? []) as any[]} loading={loadingAksi} />
         {(hororData?.videos?.length ?? 0) > 0 && (
           <VideoRow title="Horor" videos={(hororData?.videos ?? []) as any[]} />
         )}
@@ -63,7 +89,6 @@ export default function Home() {
         )}
       </div>
 
-      {/* Footer */}
       <footer className="border-t border-white/10 py-8 px-10 text-center text-xs text-gray-600">
         <p>© 2025 Sineas. Platform streaming video Indonesia terbaik.</p>
       </footer>

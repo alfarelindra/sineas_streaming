@@ -8,11 +8,13 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Browse from "@/pages/browse";
 import Watch from "@/pages/watch";
-import Upload from "@/pages/upload";
+import UploadPage from "@/pages/upload";
 import Subscription from "@/pages/subscription";
 import Profile from "@/pages/profile";
+import Dashboard from "@/pages/dashboard";
 import { useEffect } from "react";
 import { setAuthTokenGetter } from "@workspace/api-client-react";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -63,9 +65,10 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/browse" component={Browse} />
       <Route path="/watch/:id" component={Watch} />
-      <Route path="/upload" component={Upload} />
+      <Route path="/upload" component={UploadPage} />
       <Route path="/subscription" component={Subscription} />
       <Route path="/profile" component={Profile} />
+      <Route path="/dashboard" component={Dashboard} />
       <Route path="/sign-in/*?" component={SignInPage} />
       <Route path="/sign-up/*?" component={SignUpPage} />
       <Route component={NotFound} />
@@ -85,32 +88,34 @@ function App() {
   const [, setLocation] = useLocation();
 
   return (
-    <ClerkProvider
-      publishableKey={clerkPubKey}
-      proxyUrl={clerkProxyUrl}
-      signInUrl={`${basePath}/sign-in`}
-      signUpUrl={`${basePath}/sign-up`}
-      routerPush={(to) => setLocation(stripBase(to))}
-      routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
-      appearance={{
-        variables: {
-          colorPrimary: "hsl(355, 83%, 41%)",
-          colorBackground: "hsl(0, 0%, 6%)",
-          colorInputBackground: "hsl(0, 0%, 15%)",
-          colorText: "white",
-        },
-      }}
-    >
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <AuthListener />
-          <WouterRouter base={basePath}>
-            <Router />
-          </WouterRouter>
-          <Toaster />
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ClerkProvider>
+    <ThemeProvider>
+      <ClerkProvider
+        publishableKey={clerkPubKey}
+        proxyUrl={clerkProxyUrl}
+        signInUrl={`${basePath}/sign-in`}
+        signUpUrl={`${basePath}/sign-up`}
+        routerPush={(to) => setLocation(stripBase(to))}
+        routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
+        appearance={{
+          variables: {
+            colorPrimary: "hsl(355, 83%, 41%)",
+            colorBackground: "hsl(0, 0%, 6%)",
+            colorInputBackground: "hsl(0, 0%, 15%)",
+            colorText: "white",
+          },
+        }}
+      >
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <AuthListener />
+            <WouterRouter base={basePath}>
+              <Router />
+            </WouterRouter>
+            <Toaster />
+          </TooltipProvider>
+        </QueryClientProvider>
+      </ClerkProvider>
+    </ThemeProvider>
   );
 }
 

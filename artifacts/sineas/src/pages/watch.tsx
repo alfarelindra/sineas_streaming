@@ -11,6 +11,7 @@ import {
 import Navbar from "@/components/Navbar";
 import VideoCard from "@/components/VideoCard";
 import { useListVideos } from "@workspace/api-client-react";
+import { addNotification } from "@/components/NotificationBell";
 import {
   Play, Pause, Volume2, VolumeX, Maximize2, Heart, Bookmark,
   Share2, ThumbsUp, MessageCircle, Clock, Eye, Crown, Send
@@ -104,6 +105,13 @@ export default function Watch() {
       onSuccess: (data: any) => {
         setLiked(data.liked);
         setLikeCount(data.likeCount);
+        if (data.liked) {
+          addNotification({
+            type: "like",
+            message: `Kamu menyukai "${video?.title}"`,
+            link: `/watch/${videoId}`,
+          });
+        }
       },
     });
   };
@@ -128,6 +136,11 @@ export default function Watch() {
       onSuccess: () => {
         setCommentText("");
         refetchComments();
+        addNotification({
+          type: "comment",
+          message: `Komentarmu di "${video?.title}" berhasil dikirim`,
+          link: `/watch/${videoId}`,
+        });
       },
     });
   };
