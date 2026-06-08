@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Sineas"
+version = "1.0.0"
+id = "artifacts/sineas"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21628
+
+[services.development]
+run = "pnpm --filter @workspace/sineas run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/sineas", "run", "build" ]
+publicDir = "artifacts/sineas/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21628"
+BASE_PATH = "/"

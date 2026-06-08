@@ -3,13 +3,26 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Sineas Video Streaming Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: videos
+    description: Video management and streaming
+  - name: users
+    description: User profile management
+  - name: subscription
+    description: Subscription and payment management
+  - name: genres
+    description: Video genres and categories
+  - name: comments
+    description: Video comments
+  - name: storage
+    description: Object storage upload and serving endpoints
+
 paths:
   /healthz:
     get:
@@ -24,13 +37,733 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ─── Videos ───────────────────────────────────────────────────────────────
+  /videos:
+    get:
+      operationId: listVideos
+      tags: [videos]
+      summary: List videos
+      parameters:
+        - name: genre
+          in: query
+          schema: { type: string }
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: List of videos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoList"
+    post:
+      operationId: createVideo
+      tags: [videos]
+      summary: Create a new video
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoInput"
+      responses:
+        "201":
+          description: Video created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+
+  /videos/featured:
+    get:
+      operationId: getFeaturedVideos
+      tags: [videos]
+      summary: Get featured/hero videos for homepage
+      responses:
+        "200":
+          description: Featured videos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Video"
+
+  /videos/trending:
+    get:
+      operationId: getTrendingVideos
+      tags: [videos]
+      summary: Get trending/popular videos
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+      responses:
+        "200":
+          description: Trending videos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Video"
+
+  /videos/continue-watching:
+    get:
+      operationId: getContinueWatching
+      tags: [videos]
+      summary: Get videos in progress (continue watching)
+      responses:
+        "200":
+          description: Videos in progress
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VideoWithProgress"
+
+  /videos/{id}:
+    get:
+      operationId: getVideo
+      tags: [videos]
+      summary: Get a single video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Video details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateVideo
+      tags: [videos]
+      summary: Update a video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoUpdate"
+      responses:
+        "200":
+          description: Updated video
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+    delete:
+      operationId: deleteVideo
+      tags: [videos]
+      summary: Delete a video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+
+  /videos/{id}/watch:
+    get:
+      operationId: getWatchProgress
+      tags: [videos]
+      summary: Get watch progress for a video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Watch progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WatchProgress"
+    post:
+      operationId: updateWatchProgress
+      tags: [videos]
+      summary: Update watch progress for a video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WatchProgressInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WatchProgress"
+
+  /videos/{id}/like:
+    post:
+      operationId: toggleVideoLike
+      tags: [videos]
+      summary: Like or unlike a video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Like status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LikeStatus"
+
+  # ─── Comments ─────────────────────────────────────────────────────────────
+  /videos/{id}/comments:
+    get:
+      operationId: listComments
+      tags: [comments]
+      summary: List comments for a video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Comment"
+    post:
+      operationId: createComment
+      tags: [comments]
+      summary: Add a comment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentInput"
+      responses:
+        "201":
+          description: Comment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+
+  # ─── Genres ───────────────────────────────────────────────────────────────
+  /genres:
+    get:
+      operationId: listGenres
+      tags: [genres]
+      summary: List all genres
+      responses:
+        "200":
+          description: Genres
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Genre"
+
+  # ─── Users ────────────────────────────────────────────────────────────────
+  /users/me:
+    get:
+      operationId: getMe
+      tags: [users]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+    patch:
+      operationId: updateMe
+      tags: [users]
+      summary: Update current user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserProfileUpdate"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /users/watchlist:
+    get:
+      operationId: getWatchlist
+      tags: [users]
+      summary: Get user's watchlist
+      responses:
+        "200":
+          description: Watchlist
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Video"
+    post:
+      operationId: addToWatchlist
+      tags: [users]
+      summary: Add video to watchlist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WatchlistInput"
+      responses:
+        "201":
+          description: Added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WatchlistItem"
+
+  /users/watchlist/{videoId}:
+    delete:
+      operationId: removeFromWatchlist
+      tags: [users]
+      summary: Remove video from watchlist
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Removed
+
+  # ─── Subscription ─────────────────────────────────────────────────────────
+  /subscription/plans:
+    get:
+      operationId: listPlans
+      tags: [subscription]
+      summary: List all subscription plans
+      responses:
+        "200":
+          description: Plans with prices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Plan"
+
+  /subscription/status:
+    get:
+      operationId: getSubscriptionStatus
+      tags: [subscription]
+      summary: Get current user subscription status
+      responses:
+        "200":
+          description: Subscription status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubscriptionStatus"
+
+  /subscription/checkout:
+    post:
+      operationId: createCheckout
+      tags: [subscription]
+      summary: Create Stripe checkout session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutInput"
+      responses:
+        "200":
+          description: Checkout session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSession"
+
+  /subscription/portal:
+    post:
+      operationId: createPortal
+      tags: [subscription]
+      summary: Create Stripe customer portal session
+      responses:
+        "200":
+          description: Portal session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalSession"
+
+  # ─── Platform Stats (wow) ─────────────────────────────────────────────────
+  /stats:
+    get:
+      operationId: getPlatformStats
+      tags: [videos]
+      summary: Get platform stats
+      responses:
+        "200":
+          description: Platform statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformStats"
+
+  # ─── Storage ──────────────────────────────────────────────────────────────
+  /storage/uploads/request-url:
+    post:
+      tags: [storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400":
+          description: Missing or invalid required fields.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: Failed to generate upload URL.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /storage/public-objects/{filePath}:
+    get:
+      tags: [storage]
+      operationId: getPublicObject
+      summary: Serve a public asset
+      parameters:
+        - name: filePath
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Object content
+          content:
+            "*/*":
+              schema: { type: string, format: binary }
+        "404":
+          description: Not found
+
+  /storage/objects/{filePath}:
+    get:
+      tags: [storage]
+      operationId: getObject
+      summary: Serve a private object entity
+      parameters:
+        - name: filePath
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Object content
+          content:
+            "*/*":
+              schema: { type: string, format: binary }
+        "404":
+          description: Not found
+
 components:
   schemas:
     HealthStatus:
       type: object
       properties:
-        status:
-          type: string
-      required:
-        - status
+        status: { type: string }
+      required: [status]
 
+    ErrorEnvelope:
+      type: object
+      properties:
+        error: { type: string }
+      required: [error]
+
+    # ─── Video ───────────────────────────────────────────────────────────────
+    Video:
+      type: object
+      required: [id, title, uploaderName, videoUrl, thumbnailUrl, duration, viewCount, likeCount, isPublic, isPremium, createdAt]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        description: { type: ["string", "null"] }
+        uploaderName: { type: string }
+        uploaderId: { type: string }
+        videoUrl: { type: string }
+        thumbnailUrl: { type: ["string", "null"] }
+        duration: { type: integer, description: "Duration in seconds" }
+        viewCount: { type: integer }
+        likeCount: { type: integer }
+        genre: { type: ["string", "null"] }
+        isPublic: { type: boolean }
+        isPremium: { type: boolean }
+        minimumPlan: { type: ["string", "null"], description: "basic, premium, or ultra" }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    VideoList:
+      type: object
+      required: [videos, total, page, limit]
+      properties:
+        videos:
+          type: array
+          items:
+            $ref: "#/components/schemas/Video"
+        total: { type: integer }
+        page: { type: integer }
+        limit: { type: integer }
+
+    VideoWithProgress:
+      allOf:
+        - $ref: "#/components/schemas/Video"
+        - type: object
+          properties:
+            progressSeconds: { type: integer }
+            progressPercent: { type: integer }
+
+    VideoInput:
+      type: object
+      required: [title, videoUrl, duration]
+      properties:
+        title: { type: string, minLength: 1 }
+        description: { type: string }
+        videoUrl: { type: string }
+        thumbnailUrl: { type: string }
+        duration: { type: integer }
+        genre: { type: string }
+        isPublic: { type: boolean }
+        isPremium: { type: boolean }
+        minimumPlan: { type: string }
+
+    VideoUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 1 }
+        description: { type: string }
+        thumbnailUrl: { type: string }
+        genre: { type: string }
+        isPublic: { type: boolean }
+        isPremium: { type: boolean }
+        minimumPlan: { type: string }
+        featured: { type: boolean }
+
+    WatchProgress:
+      type: object
+      required: [videoId, progressSeconds, progressPercent]
+      properties:
+        videoId: { type: integer }
+        progressSeconds: { type: integer }
+        progressPercent: { type: integer }
+        completed: { type: boolean }
+
+    WatchProgressInput:
+      type: object
+      required: [progressSeconds]
+      properties:
+        progressSeconds: { type: integer }
+        completed: { type: boolean }
+
+    LikeStatus:
+      type: object
+      required: [liked, likeCount]
+      properties:
+        liked: { type: boolean }
+        likeCount: { type: integer }
+
+    # ─── Comment ─────────────────────────────────────────────────────────────
+    Comment:
+      type: object
+      required: [id, videoId, authorName, body, createdAt]
+      properties:
+        id: { type: integer }
+        videoId: { type: integer }
+        authorName: { type: string }
+        authorId: { type: string }
+        body: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    CommentInput:
+      type: object
+      required: [body]
+      properties:
+        body: { type: string, minLength: 1 }
+
+    # ─── Genre ───────────────────────────────────────────────────────────────
+    Genre:
+      type: object
+      required: [id, name, slug]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        slug: { type: string }
+        videoCount: { type: integer }
+
+    # ─── User ────────────────────────────────────────────────────────────────
+    UserProfile:
+      type: object
+      required: [id, clerkId, displayName, createdAt]
+      properties:
+        id: { type: integer }
+        clerkId: { type: string }
+        displayName: { type: string }
+        bio: { type: ["string", "null"] }
+        avatarUrl: { type: ["string", "null"] }
+        stripeCustomerId: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+
+    UserProfileUpdate:
+      type: object
+      properties:
+        displayName: { type: string }
+        bio: { type: string }
+        avatarUrl: { type: string }
+
+    WatchlistItem:
+      type: object
+      required: [id, videoId, addedAt]
+      properties:
+        id: { type: integer }
+        videoId: { type: integer }
+        addedAt: { type: string, format: date-time }
+
+    WatchlistInput:
+      type: object
+      required: [videoId]
+      properties:
+        videoId: { type: integer }
+
+    # ─── Subscription ────────────────────────────────────────────────────────
+    Plan:
+      type: object
+      required: [id, name, priceId, amount, currency, interval, features]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        priceId: { type: string }
+        amount: { type: integer }
+        currency: { type: string }
+        interval: { type: string }
+        features:
+          type: array
+          items: { type: string }
+        tier: { type: string, description: "basic, premium, or ultra" }
+
+    SubscriptionStatus:
+      type: object
+      required: [isSubscribed, plan, status]
+      properties:
+        isSubscribed: { type: boolean }
+        plan: { type: ["string", "null"] }
+        status: { type: ["string", "null"] }
+        currentPeriodEnd: { type: ["string", "null"] }
+        cancelAtPeriodEnd: { type: boolean }
+
+    CheckoutInput:
+      type: object
+      required: [priceId]
+      properties:
+        priceId: { type: string }
+
+    CheckoutSession:
+      type: object
+      required: [url]
+      properties:
+        url: { type: string }
+
+    PortalSession:
+      type: object
+      required: [url]
+      properties:
+        url: { type: string }
+
+    # ─── Stats ───────────────────────────────────────────────────────────────
+    PlatformStats:
+      type: object
+      required: [totalVideos, totalViews, totalUsers, videosByGenre]
+      properties:
+        totalVideos: { type: integer }
+        totalViews: { type: integer }
+        totalUsers: { type: integer }
+        videosByGenre:
+          type: array
+          items:
+            type: object
+            required: [genre, count]
+            properties:
+              genre: { type: string }
+              count: { type: integer }
+
+    # ─── Storage ─────────────────────────────────────────────────────────────
+    UploadUrlRequest:
+      type: object
+      required: [filename, contentType]
+      properties:
+        filename: { type: string }
+        contentType: { type: string }
+        folder: { type: string }
+
+    UploadUrlResponse:
+      type: object
+      required: [uploadUrl, objectPath]
+      properties:
+        uploadUrl: { type: string }
+        objectPath: { type: string }

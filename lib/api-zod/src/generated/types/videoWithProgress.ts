@@ -5,7 +5,9 @@
  * Sineas Video Streaming Platform API
  * OpenAPI spec version: 0.1.0
  */
+import type { Video } from './video';
 
-export interface HealthStatus {
-  status: string;
-}
+export type VideoWithProgress = Video & {
+  progressSeconds?: number;
+  progressPercent?: number;
+};
