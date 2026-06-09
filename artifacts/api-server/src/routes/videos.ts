@@ -179,15 +179,19 @@ router.post("/videos/:id/watch", requireAuth, async (req, res): Promise<void> =>
   const [existing] = await db.select().from(watchProgressTable)
     .where(and(eq(watchProgressTable.videoId, id), eq(watchProgressTable.userClerkId, clerkId)));
 
+  const [video] = await db.select({ duration: videosTable.duration }).from(videosTable).where(eq(videosTable.id, id));
+  const duration = video?.duration ?? 1;
+  const pct = Math.round((parsed.data.progressSeconds / duration) * 100);
+
   if (existing) {
     const [updated] = await db.update(watchProgressTable)
-      .set({ progressSeconds: parsed.data.progressSeconds, progressPercent: parsed.data.progressSeconds, completed: parsed.data.completed ?? false })
+      .set({ progressSeconds: parsed.data.progressSeconds, progressPercent: pct, completed: parsed.data.completed ?? false })
       .where(and(eq(watchProgressTable.videoId, id), eq(watchProgressTable.userClerkId, clerkId)))
       .returning();
     res.json({ videoId: updated.videoId, progressSeconds: updated.progressSeconds, progressPercent: updated.progressPercent, completed: updated.completed });
   } else {
     const [created] = await db.insert(watchProgressTable)
-      .values({ userClerkId: clerkId, videoId: id, progressSeconds: parsed.data.progressSeconds, progressPercent: parsed.data.progressSeconds, completed: parsed.data.completed ?? false })
+      .values({ userClerkId: clerkId, videoId: id, progressSeconds: parsed.data.progressSeconds, progressPercent: pct, completed: parsed.data.completed ?? false })
       .returning();
     res.json({ videoId: created.videoId, progressSeconds: created.progressSeconds, progressPercent: created.progressPercent, completed: created.completed });
   }

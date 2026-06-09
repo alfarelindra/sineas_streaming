@@ -18,7 +18,8 @@ export default function Home() {
   const { data: aksiData, isLoading: loadingAksi } = useListVideos({ genre: "Aksi", limit: 12 });
   const { data: hororData } = useListVideos({ genre: "Horor", limit: 12 });
   const { data: animasiData } = useListVideos({ genre: "Animasi", limit: 12 });
-  const { data: continueWatching } = useGetContinueWatching();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: continueWatching } = useGetContinueWatching({ query: { enabled: !!isSignedIn } as any });
 
   const heroVideo = featured?.[0] ?? trending?.[0];
 
