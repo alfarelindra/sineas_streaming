@@ -21,12 +21,21 @@ interface NavbarProps {
 }
 
 export default function Navbar({ onSearch }: NavbarProps) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchVal, setSearchVal] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const { theme, toggle } = useTheme();
+
+  const goSearch = (q: string) => {
+    setSearchOpen(false);
+    if (onSearch) {
+      onSearch(q);
+    } else {
+      setLocation(q.trim() ? `/search?q=${encodeURIComponent(q.trim())}` : "/search");
+    }
+  };
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -79,8 +88,7 @@ export default function Navbar({ onSearch }: NavbarProps) {
                 className="flex items-center gap-2"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  onSearch?.(searchVal);
-                  setSearchOpen(false);
+                  goSearch(searchVal);
                 }}
               >
                 <Input

@@ -12,6 +12,7 @@ import UploadPage from "@/pages/upload";
 import Subscription from "@/pages/subscription";
 import Profile from "@/pages/profile";
 import Dashboard from "@/pages/dashboard";
+import SearchPage from "@/pages/search";
 import { useEffect } from "react";
 import { setAuthTokenGetter } from "@workspace/api-client-react";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -69,6 +70,7 @@ function Router() {
       <Route path="/subscription" component={Subscription} />
       <Route path="/profile" component={Profile} />
       <Route path="/dashboard" component={Dashboard} />
+      <Route path="/search" component={SearchPage} />
       <Route path="/sign-in/*?" component={SignInPage} />
       <Route path="/sign-up/*?" component={SignUpPage} />
       <Route component={NotFound} />
