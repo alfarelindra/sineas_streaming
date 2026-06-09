@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useAuth, UserButton } from "@clerk/react";
-import { Search, Upload, Menu, X, Film, Sun, Moon, LayoutDashboard } from "lucide-react";
+import { Search, Upload, Menu, X, Film, Sun, Moon, LayoutDashboard, Bookmark } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -117,6 +117,12 @@ export default function Navbar({ onSearch }: NavbarProps) {
             <NotificationBell />
 
             <SignedIn>
+              <Link href="/watchlist" className="hidden sm:block" title="Daftar Tonton">
+                <Button size="sm" variant="ghost" className={`gap-1 ${location === "/watchlist" ? "text-white" : "text-gray-300 hover:text-white"}`}>
+                  <Bookmark className={`w-4 h-4 ${location === "/watchlist" ? "fill-white" : ""}`} />
+                  <span className="text-xs">Disimpan</span>
+                </Button>
+              </Link>
               <Link href="/dashboard" className="hidden sm:block">
                 <Button size="sm" variant="ghost" className="text-gray-300 hover:text-white gap-1">
                   <LayoutDashboard className="w-4 h-4" />
@@ -157,6 +163,7 @@ export default function Navbar({ onSearch }: NavbarProps) {
               </Link>
             ))}
             <SignedIn>
+              <Link href="/watchlist" className="block px-4 py-2 text-sm text-gray-300 hover:text-white" onClick={() => setMenuOpen(false)}>Daftar Tonton</Link>
               <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-300 hover:text-white" onClick={() => setMenuOpen(false)}>Dashboard</Link>
               <Link href="/upload" className="block px-4 py-2 text-sm text-gray-300 hover:text-white" onClick={() => setMenuOpen(false)}>Upload Video</Link>
             </SignedIn>
