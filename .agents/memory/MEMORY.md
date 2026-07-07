@@ -2,3 +2,4 @@
 - [API hook signatures](api-hook-signatures.md) — Orval-generated query hooks take positional `id: number`, not `{ id }` objects; mutations take `{ data }` wrapper
 - [Stripe graceful fallback](stripe-graceful.md) — subscription routes work without Stripe; never block features or re-propose Stripe setup
 - [Sineas brand palette](sineas-brand-palette.md) — blue=interactive (white text ok), yellow=accent (needs dark text); shared Logo.tsx; light-mode not tokenized; no /history yet
+- [Drizzle ANY(array) footgun](drizzle-any-array-footgun.md) — raw `ANY(${arr})` in drizzle sql is invalid SQL; use `inArray()`. Breaks video-by-ids endpoints when data exists

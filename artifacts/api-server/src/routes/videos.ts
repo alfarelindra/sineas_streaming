@@ -8,7 +8,7 @@ import {
   insertVideoSchema,
   insertCommentSchema,
 } from "@workspace/db";
-import { eq, desc, ilike, and, sql } from "drizzle-orm";
+import { eq, desc, ilike, and, sql, inArray } from "drizzle-orm";
 import {
   CreateVideoBody,
   UpdateVideoBody,
@@ -159,7 +159,7 @@ router.get("/videos/history", requireAuth, async (req, res): Promise<void> => {
   const videoIds = progresses.map(p => p.videoId);
   let items: any[] = [];
   if (videoIds.length) {
-    const videos = await db.select().from(videosTable).where(sql`${videosTable.id} = ANY(${videoIds})`);
+    const videos = await db.select().from(videosTable).where(inArray(videosTable.id, videoIds));
     const videoMap = new Map(videos.map(v => [v.id, v]));
     items = progresses
       .filter(p => videoMap.has(p.videoId))
