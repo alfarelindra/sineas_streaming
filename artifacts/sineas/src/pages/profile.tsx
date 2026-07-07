@@ -51,23 +51,23 @@ export default function Profile() {
 
   if (!isSignedIn) {
     return (
-      <div className="min-h-screen bg-[#0f0f0f] text-white">
+      <div className="min-h-screen bg-[#0a0f1e] text-white">
         <Navbar />
         <div className="text-center py-36">
           <h2 className="text-2xl font-bold mb-4">Masuk untuk Melihat Profil</h2>
-          <Link href="/sign-in"><Button className="bg-red-600 hover:bg-red-700">Masuk</Button></Link>
+          <Link href="/sign-in"><Button className="bg-blue-600 hover:bg-blue-700">Masuk</Button></Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] text-white">
+    <div className="min-h-screen bg-[#0a0f1e] text-white">
       <Navbar />
       <div className="pt-24 max-w-4xl mx-auto px-6 pb-16">
         <div className="flex flex-col sm:flex-row items-start gap-6 mb-10">
           <Avatar className="w-20 h-20">
-            <AvatarFallback className="bg-red-600 text-white text-2xl font-bold">
+            <AvatarFallback className="bg-blue-600 text-white text-2xl font-bold">
               {(dbUser?.displayName ?? clerkUser?.firstName ?? "U")[0].toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -84,7 +84,7 @@ export default function Profile() {
                   <Textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={2} className="bg-gray-900 border-gray-700 text-white mt-1 resize-none" />
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={saveEdit} disabled={updateUser.isPending} className="bg-red-600 hover:bg-red-700 gap-1">
+                  <Button size="sm" onClick={saveEdit} disabled={updateUser.isPending} className="bg-blue-600 hover:bg-blue-700 gap-1">
                     <Check className="w-3 h-3" /> Simpan
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => setEditing(false)} className="border-gray-700 text-gray-400">Batal</Button>
@@ -130,7 +130,7 @@ export default function Profile() {
               <div className="text-center py-16 text-gray-500">
                 <Bookmark className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p>Daftar tontonmu masih kosong</p>
-                <Link href="/browse"><Button size="sm" className="mt-3 bg-red-600 hover:bg-red-700">Jelajahi Video</Button></Link>
+                <Link href="/browse"><Button size="sm" className="mt-3 bg-blue-600 hover:bg-blue-700">Jelajahi Video</Button></Link>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -166,7 +166,7 @@ export default function Profile() {
                 <div className="bg-gray-900 rounded-2xl p-6 text-center space-y-4">
                   <Crown className="w-10 h-10 text-gray-600 mx-auto" />
                   <p className="text-gray-400">Belum berlangganan</p>
-                  <Link href="/subscription"><Button className="bg-red-600 hover:bg-red-700">Lihat Paket</Button></Link>
+                  <Link href="/subscription"><Button className="bg-blue-600 hover:bg-blue-700">Lihat Paket</Button></Link>
                 </div>
               )}
             </div>

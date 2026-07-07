@@ -54,7 +54,7 @@ export default function WatchlistPage() {
 
   if (!isSignedIn) {
     return (
-      <div className="min-h-screen bg-[#0f0f0f] text-white">
+      <div className="min-h-screen bg-[#0a0f1e] text-white">
         <Navbar />
         <div className="pt-36 text-center px-6">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-800 mb-6">
@@ -63,7 +63,7 @@ export default function WatchlistPage() {
           <h2 className="text-2xl font-bold mb-3">Masuk untuk melihat daftar tonton</h2>
           <p className="text-gray-500 text-sm mb-6">Simpan video favoritmu dan lanjutkan kapan saja.</p>
           <Link href="/sign-in">
-            <Button className="bg-red-600 hover:bg-red-700">Masuk Sekarang</Button>
+            <Button className="bg-blue-600 hover:bg-blue-700">Masuk Sekarang</Button>
           </Link>
         </div>
       </div>
@@ -71,15 +71,15 @@ export default function WatchlistPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] text-white">
+    <div className="min-h-screen bg-[#0a0f1e] text-white">
       <Navbar />
 
       <div className="pt-24 max-w-screen-xl mx-auto px-6 sm:px-10 pb-16">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-red-500/15">
-              <Bookmark className="w-6 h-6 text-red-400 fill-red-400/30" />
+            <div className="p-2.5 rounded-xl bg-yellow-400/15">
+              <Bookmark className="w-6 h-6 text-yellow-400 fill-yellow-400/30" />
             </div>
             <div>
               <h1 className="text-2xl font-black">Daftar Tonton</h1>
@@ -98,7 +98,7 @@ export default function WatchlistPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Cari di daftar tonton..."
-                className="w-full bg-gray-900 border border-gray-700 focus:border-red-500 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-gray-600 outline-none transition-colors"
+                className="w-full bg-gray-900 border border-gray-700 focus:border-yellow-400 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-gray-600 outline-none transition-colors"
               />
             </div>
           )}
@@ -128,7 +128,7 @@ export default function WatchlistPage() {
               Temukan video yang kamu suka dan klik tombol <strong className="text-gray-300">Simpan</strong> untuk menambahkannya ke sini.
             </p>
             <Link href="/browse">
-              <Button className="bg-red-600 hover:bg-red-700 gap-2">
+              <Button className="bg-blue-600 hover:bg-blue-700 gap-2">
                 <Play className="w-4 h-4" /> Jelajahi Video
               </Button>
             </Link>
@@ -140,7 +140,7 @@ export default function WatchlistPage() {
           <div className="text-center py-20 text-gray-500">
             <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
             <p className="text-lg font-medium">Tidak ada hasil untuk "{search}"</p>
-            <button onClick={() => setSearch("")} className="mt-3 text-sm text-red-400 hover:text-red-300">
+            <button onClick={() => setSearch("")} className="mt-3 text-sm text-yellow-400 hover:text-yellow-300">
               Hapus pencarian
             </button>
           </div>
@@ -157,7 +157,7 @@ export default function WatchlistPage() {
                   onClick={() => handleRemove(v.id, v.title)}
                   disabled={removing.has(v.id)}
                   title="Hapus dari daftar tonton"
-                  className="absolute top-2 right-2 opacity-0 group-hover/item:opacity-100 transition-all duration-200 bg-black/70 hover:bg-red-600 backdrop-blur-sm rounded-full p-1.5 text-white disabled:opacity-50 disabled:cursor-not-allowed z-10"
+                  className="absolute top-2 right-2 opacity-0 group-hover/item:opacity-100 transition-all duration-200 bg-black/70 hover:bg-blue-600 backdrop-blur-sm rounded-full p-1.5 text-white disabled:opacity-50 disabled:cursor-not-allowed z-10"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

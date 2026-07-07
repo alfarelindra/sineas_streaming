@@ -43,7 +43,7 @@ export default function Browse() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] text-white">
+    <div className="min-h-screen bg-[#0a0f1e] text-white">
       <Navbar onSearch={handleSearch} />
       <div className="pt-24 max-w-screen-2xl mx-auto px-6 sm:px-10 pb-16">
         <h1 className="text-3xl font-black mb-6">Jelajahi</h1>
@@ -67,7 +67,7 @@ export default function Browse() {
           <div className="flex flex-wrap gap-2 items-center">
             <Badge
               variant={!genre ? "default" : "outline"}
-              className={`cursor-pointer text-sm px-3 py-1.5 ${!genre ? "bg-red-600 hover:bg-red-700 border-0" : "border-gray-700 text-gray-400 hover:text-white hover:border-gray-500"}`}
+              className={`cursor-pointer text-sm px-3 py-1.5 ${!genre ? "bg-blue-600 hover:bg-blue-700 border-0" : "border-gray-700 text-gray-400 hover:text-white hover:border-gray-500"}`}
               onClick={() => { setGenre(""); setPage(1); }}
             >
               Semua
@@ -76,7 +76,7 @@ export default function Browse() {
               <Badge
                 key={g.slug}
                 variant={genre === g.name ? "default" : "outline"}
-                className={`cursor-pointer text-sm px-3 py-1.5 ${genre === g.name ? "bg-red-600 hover:bg-red-700 border-0" : "border-gray-700 text-gray-400 hover:text-white hover:border-gray-500"}`}
+                className={`cursor-pointer text-sm px-3 py-1.5 ${genre === g.name ? "bg-blue-600 hover:bg-blue-700 border-0" : "border-gray-700 text-gray-400 hover:text-white hover:border-gray-500"}`}
                 onClick={() => { setGenre(genre === g.name ? "" : g.name); setPage(1); }}
               >
                 {g.name}
@@ -122,7 +122,7 @@ export default function Browse() {
                     onClick={() => setPage(p)}
                     className={`w-9 h-9 rounded text-sm font-medium transition-colors ${
                       p === page
-                        ? "bg-red-600 text-white"
+                        ? "bg-blue-600 text-white"
                         : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
                     }`}
                   >

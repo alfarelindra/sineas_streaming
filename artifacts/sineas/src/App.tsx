@@ -40,7 +40,7 @@ function stripBase(path: string): string {
 
 function SignInPage() {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-[#0f0f0f] px-4">
+    <div className="flex min-h-[100dvh] items-center justify-center bg-[#0a0f1e] px-4">
       <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
     </div>
   );
@@ -48,7 +48,7 @@ function SignInPage() {
 
 function SignUpPage() {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-[#0f0f0f] px-4">
+    <div className="flex min-h-[100dvh] items-center justify-center bg-[#0a0f1e] px-4">
       <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
     </div>
   );
@@ -85,7 +85,7 @@ function Router() {
 function App() {
   if (!clerkPubKey) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0f0f0f] text-white">
+      <div className="flex min-h-screen items-center justify-center bg-[#0a0f1e] text-white">
         <p>Konfigurasi Clerk tidak ditemukan</p>
       </div>
     );
@@ -104,9 +104,9 @@ function App() {
         routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
         appearance={{
           variables: {
-            colorPrimary: "hsl(355, 83%, 41%)",
-            colorBackground: "hsl(0, 0%, 6%)",
-            colorInputBackground: "hsl(0, 0%, 15%)",
+            colorPrimary: "hsl(221, 83%, 53%)",
+            colorBackground: "hsl(223, 44%, 11%)",
+            colorInputBackground: "hsl(222, 30%, 17%)",
             colorText: "white",
           },
         }}

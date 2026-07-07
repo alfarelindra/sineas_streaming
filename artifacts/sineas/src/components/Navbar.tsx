@@ -1,11 +1,12 @@
 import { Link, useLocation } from "wouter";
 import { useAuth, UserButton } from "@clerk/react";
-import { Search, Upload, Menu, X, Film, Sun, Moon, LayoutDashboard, Bookmark } from "lucide-react";
+import { Search, Upload, Menu, X, Sun, Moon, LayoutDashboard, Bookmark } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTheme } from "@/components/ThemeProvider";
 import NotificationBell from "@/components/NotificationBell";
+import Logo from "@/components/Logo";
 
 function SignedIn({ children }: { children: React.ReactNode }) {
   const { isSignedIn } = useAuth();
@@ -59,12 +60,7 @@ export default function Navbar({ onSearch }: NavbarProps) {
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${bg}`}>
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <Film className="w-7 h-7 text-red-500" />
-            <span className={`text-2xl font-black tracking-tight ${theme === "light" && scrolled ? "text-gray-900" : "text-white"}`}>
-              SINEAS
-            </span>
-          </Link>
+          <Logo href="/" size="md" />
 
           <div className="hidden md:flex items-center gap-6 ml-8">
             {navLinks.map((l) => (
@@ -135,12 +131,12 @@ export default function Navbar({ onSearch }: NavbarProps) {
                   <span className="text-xs">Upload</span>
                 </Button>
               </Link>
-              <UserButton appearance={{ variables: { colorPrimary: "#e11d48" } }} />
+              <UserButton appearance={{ variables: { colorPrimary: "hsl(221, 83%, 53%)" } }} />
             </SignedIn>
 
             <SignedOut>
               <Link href="/sign-in">
-                <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 h-8">
+                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 h-8">
                   Masuk
                 </Button>
               </Link>

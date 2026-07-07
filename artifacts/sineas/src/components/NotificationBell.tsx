@@ -88,7 +88,7 @@ export default function NotificationBell() {
       >
         <Bell className="w-5 h-5" />
         {unread > 0 && (
-          <span className="absolute top-1 right-1 min-w-[16px] h-4 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center font-bold px-0.5">
+          <span className="absolute top-1 right-1 min-w-[16px] h-4 bg-yellow-400 rounded-full text-[10px] text-blue-950 flex items-center justify-center font-bold px-0.5">
             {unread > 9 ? "9+" : unread}
           </span>
         )}
@@ -99,7 +99,7 @@ export default function NotificationBell() {
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
             <h3 className="font-bold text-white text-sm">Notifikasi</h3>
             {unread > 0 && (
-              <button onClick={markAllRead} className="text-xs text-red-400 hover:text-red-300 transition-colors">
+              <button onClick={markAllRead} className="text-xs text-yellow-400 hover:text-yellow-300 transition-colors">
                 Tandai semua dibaca
               </button>
             )}
@@ -115,7 +115,7 @@ export default function NotificationBell() {
               notifs.map(n => (
                 <div
                   key={n.id}
-                  className={`px-4 py-3 border-b border-white/5 hover:bg-white/5 transition-colors ${!n.read ? "bg-red-500/5" : ""}`}
+                  className={`px-4 py-3 border-b border-white/5 hover:bg-white/5 transition-colors ${!n.read ? "bg-yellow-400/10" : ""}`}
                 >
                   {n.link ? (
                     <Link href={n.link} onClick={() => setOpen(false)}>
@@ -128,7 +128,7 @@ export default function NotificationBell() {
                       <p className="text-xs text-gray-500 mt-0.5">{formatTime(n.time)}</p>
                     </>
                   )}
-                  {!n.read && <div className="w-2 h-2 rounded-full bg-red-500 float-right mt-1" />}
+                  {!n.read && <div className="w-2 h-2 rounded-full bg-yellow-400 float-right mt-1" />}
                 </div>
               ))
             )}

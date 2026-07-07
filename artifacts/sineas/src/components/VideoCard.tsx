@@ -79,7 +79,7 @@ export default function VideoCard({ video, variant = "default" }: VideoCardProps
 
           {/* Premium badge */}
           {video.minimumPlan && video.minimumPlan !== "basic" && (
-            <div className={`absolute top-2 left-2 text-xs px-2 py-0.5 rounded flex items-center gap-1 font-semibold ${planColors[video.minimumPlan] ?? "bg-red-500/90 text-white"}`}>
+            <div className={`absolute top-2 left-2 text-xs px-2 py-0.5 rounded flex items-center gap-1 font-semibold ${planColors[video.minimumPlan] ?? "bg-blue-500/90 text-white"}`}>
               <Crown className="w-3 h-3" />
               {video.minimumPlan.toUpperCase()}
             </div>
@@ -89,7 +89,7 @@ export default function VideoCard({ video, variant = "default" }: VideoCardProps
           {video.progressPercent !== undefined && video.progressPercent > 0 && (
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
               <div
-                className="h-full bg-red-500"
+                className="h-full bg-yellow-400"
                 style={{ width: `${Math.min(100, video.progressPercent)}%` }}
               />
             </div>
@@ -99,7 +99,7 @@ export default function VideoCard({ video, variant = "default" }: VideoCardProps
 
       <div className="mt-2 px-0.5">
         <Link href={`/watch/${video.id}`}>
-          <h3 className="text-sm font-semibold text-white line-clamp-2 group-hover:text-red-400 transition-colors">
+          <h3 className="text-sm font-semibold text-white line-clamp-2 group-hover:text-yellow-400 transition-colors">
             {video.title}
           </h3>
         </Link>

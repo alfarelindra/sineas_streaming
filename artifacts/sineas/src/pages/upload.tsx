@@ -112,14 +112,14 @@ export default function UploadPage() {
 
   if (!isSignedIn) {
     return (
-      <div className="min-h-screen bg-[#0f0f0f] text-white">
+      <div className="min-h-screen bg-[#0a0f1e] text-white">
         <Navbar />
         <div className="text-center py-36">
           <Film className="w-16 h-16 mx-auto mb-4 text-gray-600" />
           <h2 className="text-2xl font-bold mb-2">Masuk untuk Upload</h2>
           <p className="text-gray-400 mb-6">Bagikan konten video terbaikmu ke seluruh Indonesia</p>
           <Link href="/sign-in">
-            <Button className="bg-red-600 hover:bg-red-700">Masuk Sekarang</Button>
+            <Button className="bg-blue-600 hover:bg-blue-700">Masuk Sekarang</Button>
           </Link>
         </div>
       </div>
@@ -127,13 +127,13 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] text-white">
+    <div className="min-h-screen bg-[#0a0f1e] text-white">
       <Navbar />
       <div className="pt-24 max-w-2xl mx-auto px-6 pb-16">
         {step === "uploading" && (
           <div className="text-center py-24 space-y-6">
-            <div className="w-16 h-16 rounded-full bg-red-600/20 flex items-center justify-center mx-auto animate-pulse">
-              <UploadIcon className="w-8 h-8 text-red-400" />
+            <div className="w-16 h-16 rounded-full bg-blue-600/20 flex items-center justify-center mx-auto animate-pulse">
+              <UploadIcon className="w-8 h-8 text-yellow-400" />
             </div>
             <div>
               <h2 className="text-xl font-bold mb-2">Mengupload video...</h2>
@@ -150,7 +150,7 @@ export default function UploadPage() {
             <h2 className="text-2xl font-bold text-green-400">Video Berhasil Diupload!</h2>
             <p className="text-gray-400">Videomu kini tersedia di Sineas</p>
             <div className="flex justify-center gap-3 mt-6">
-              <Button onClick={() => setLocation("/")} className="bg-red-600 hover:bg-red-700">
+              <Button onClick={() => setLocation("/")} className="bg-blue-600 hover:bg-blue-700">
                 Kembali ke Beranda
               </Button>
               <Button
@@ -166,10 +166,10 @@ export default function UploadPage() {
 
         {step === "error" && (
           <div className="text-center py-24 space-y-4">
-            <AlertCircle className="w-16 h-16 text-red-400 mx-auto" />
-            <h2 className="text-2xl font-bold text-red-400">Upload Gagal</h2>
+            <AlertCircle className="w-16 h-16 text-yellow-400 mx-auto" />
+            <h2 className="text-2xl font-bold text-yellow-400">Upload Gagal</h2>
             <p className="text-gray-400">Terjadi kesalahan. Coba lagi.</p>
-            <Button onClick={() => setStep("form")} className="bg-red-600 hover:bg-red-700">Coba Lagi</Button>
+            <Button onClick={() => setStep("form")} className="bg-blue-600 hover:bg-blue-700">Coba Lagi</Button>
           </div>
         )}
 
@@ -181,7 +181,7 @@ export default function UploadPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="title" className="text-gray-300">Judul <span className="text-red-500">*</span></Label>
+              <Label htmlFor="title" className="text-gray-300">Judul <span className="text-yellow-400">*</span></Label>
               <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Judul video yang menarik" className="bg-gray-900 border-gray-700 text-white" required />
             </div>
 
@@ -192,7 +192,7 @@ export default function UploadPage() {
 
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <Label className="text-gray-300">Sumber Video <span className="text-red-500">*</span></Label>
+                <Label className="text-gray-300">Sumber Video <span className="text-yellow-400">*</span></Label>
                 <div className="flex items-center gap-2 ml-auto">
                   <span className="text-xs text-gray-500">URL Langsung</span>
                   <Switch checked={useDirectUrl} onCheckedChange={setUseDirectUrl} />
@@ -207,10 +207,10 @@ export default function UploadPage() {
               ) : (
                 <div
                   onClick={() => videoInputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${videoFile ? "border-red-500/50 bg-red-500/5" : "border-gray-700 hover:border-gray-500"}`}
+                  className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${videoFile ? "border-yellow-400/50 bg-yellow-400/10" : "border-gray-700 hover:border-gray-500"}`}
                 >
                   <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={(e) => handleVideoFile(e.target.files?.[0] ?? null)} />
-                  <Film className={`w-8 h-8 mx-auto mb-2 ${videoFile ? "text-red-400" : "text-gray-600"}`} />
+                  <Film className={`w-8 h-8 mx-auto mb-2 ${videoFile ? "text-yellow-400" : "text-gray-600"}`} />
                   {videoFile ? (
                     <div>
                       <p className="text-sm font-medium text-white">{videoFile.name}</p>
@@ -231,10 +231,10 @@ export default function UploadPage() {
               <div className="flex gap-3">
                 <div
                   onClick={() => thumbInputRef.current?.click()}
-                  className={`flex-1 border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${thumbnailFile ? "border-red-500/50" : "border-gray-700 hover:border-gray-500"}`}
+                  className={`flex-1 border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${thumbnailFile ? "border-yellow-400/50" : "border-gray-700 hover:border-gray-500"}`}
                 >
                   <input ref={thumbInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => setThumbnailFile(e.target.files?.[0] ?? null)} />
-                  <Image className={`w-5 h-5 mx-auto mb-1 ${thumbnailFile ? "text-red-400" : "text-gray-600"}`} />
+                  <Image className={`w-5 h-5 mx-auto mb-1 ${thumbnailFile ? "text-yellow-400" : "text-gray-600"}`} />
                   <p className="text-xs text-gray-500">{thumbnailFile ? thumbnailFile.name : "Upload gambar"}</p>
                 </div>
                 <div className="relative flex-1">
@@ -291,7 +291,7 @@ export default function UploadPage() {
               </div>
             )}
 
-            <Button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 text-base gap-2" disabled={createVideo.isPending}>
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 text-base gap-2" disabled={createVideo.isPending}>
               <UploadIcon className="w-4 h-4" />
               Upload Video
             </Button>

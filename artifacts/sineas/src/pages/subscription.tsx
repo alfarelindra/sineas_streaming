@@ -79,18 +79,18 @@ export default function Subscription() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] text-white">
+    <div className="min-h-screen bg-[#0a0f1e] text-white">
       <Navbar />
       <div className="pt-24 max-w-screen-xl mx-auto px-6 pb-24">
         {/* Header */}
         <div className="text-center mb-12">
-          <Badge className="mb-4 bg-red-600/20 text-red-400 border-red-500/30">
+          <Badge className="mb-4 bg-blue-600/20 text-yellow-400 border-yellow-400/30">
             <Crown className="w-3 h-3 mr-1" />
             Berlangganan Sineas
           </Badge>
           <h1 className="text-4xl sm:text-5xl font-black mb-4">
             Nikmati Hiburan{" "}
-            <span className="text-red-500">Tanpa Batas</span>
+            <span className="text-yellow-400">Tanpa Batas</span>
           </h1>
           <p className="text-gray-400 text-lg max-w-xl mx-auto">
             Pilih paket yang sesuai untukmu. Batalkan kapan saja.
@@ -135,7 +135,7 @@ export default function Subscription() {
               const isPopular = plan.tier === POPULAR_PLAN || plan.id === POPULAR_PLAN;
               const isCurrentPlan = status?.plan === plan.tier || status?.plan === plan.id;
               const colorClass = PLAN_COLORS[plan.tier ?? plan.id] ?? PLAN_COLORS.basic;
-              const btnClass = PLAN_BUTTON[plan.tier ?? plan.id] ?? "bg-red-600 hover:bg-red-700";
+              const btnClass = PLAN_BUTTON[plan.tier ?? plan.id] ?? "bg-blue-600 hover:bg-blue-700";
 
               return (
                 <div
@@ -202,12 +202,12 @@ export default function Subscription() {
           <p className="text-sm text-gray-500">
             Pembayaran melalui Stripe. Semua harga dalam Rupiah Indonesia.
             Dengan berlangganan, kamu setuju dengan{" "}
-            <span className="text-red-400 cursor-pointer">Syarat & Ketentuan</span> Sineas.
+            <span className="text-yellow-400 cursor-pointer">Syarat & Ketentuan</span> Sineas.
           </p>
           {!isSignedIn && (
             <div className="mt-6">
               <Link href="/sign-in">
-                <Button className="bg-red-600 hover:bg-red-700">
+                <Button className="bg-blue-600 hover:bg-blue-700">
                   Masuk untuk Berlangganan
                 </Button>
               </Link>

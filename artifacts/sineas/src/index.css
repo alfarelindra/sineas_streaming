@@ -61,36 +61,36 @@
 }
 
 :root {
-  /* Default to dark theme for cinematic vibe */
-  --background: 0 0% 4%;
-  --foreground: 0 0% 98%;
+  /* Default to midnight-blue theme for a modern, premium, futuristic vibe */
+  --background: 224 47% 7%; /* Midnight Blue */
+  --foreground: 210 40% 98%;
 
-  --card: 0 0% 6%;
-  --card-foreground: 0 0% 98%;
-  --card-border: 0 0% 12%;
+  --card: 223 44% 11%;
+  --card-foreground: 210 40% 98%;
+  --card-border: 222 30% 18%;
 
-  --popover: 0 0% 6%;
-  --popover-foreground: 0 0% 98%;
-  --popover-border: 0 0% 12%;
+  --popover: 223 44% 11%;
+  --popover-foreground: 210 40% 98%;
+  --popover-border: 222 30% 18%;
 
-  --primary: 355 83% 41%; /* Rich Crimson */
-  --primary-foreground: 0 0% 98%;
+  --primary: 221 83% 53%; /* Royal Blue */
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: 45 93% 47%; /* Warm Gold */
-  --secondary-foreground: 0 0% 9%;
+  --secondary: 48 96% 53%; /* Vivid Yellow */
+  --secondary-foreground: 224 60% 10%;
 
-  --muted: 0 0% 15%;
-  --muted-foreground: 0 0% 65%;
+  --muted: 222 30% 17%;
+  --muted-foreground: 215 20% 68%;
 
-  --accent: 0 0% 15%;
-  --accent-foreground: 0 0% 98%;
+  --accent: 222 30% 17%;
+  --accent-foreground: 210 40% 98%;
 
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 0 0% 15%;
-  --input: 0 0% 15%;
-  --ring: 355 83% 41%;
+  --border: 222 30% 18%;
+  --input: 222 30% 18%;
+  --ring: 221 83% 53%;
 
   --radius: 0.5rem;
   --app-font-sans: 'Inter', sans-serif;
@@ -122,7 +122,7 @@ html.light body {
 }
 
 /* Light mode page backgrounds */
-html.light .min-h-screen.bg-\[#0f0f0f\] {
+html.light .min-h-screen.bg-\[#0a0f1e\] {
   background-color: hsl(0, 0%, 97%) !important;
 }
 

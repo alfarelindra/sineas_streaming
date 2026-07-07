@@ -147,7 +147,7 @@ export default function Watch() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0f0f0f]">
+      <div className="min-h-screen bg-[#0a0f1e]">
         <Navbar />
         <div className="pt-16 max-w-screen-2xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
@@ -161,10 +161,10 @@ export default function Watch() {
 
   if (!video) {
     return (
-      <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center">
         <div className="text-center text-gray-400">
           <p className="text-xl">Video tidak ditemukan</p>
-          <Link href="/"><Button className="mt-4 bg-red-600">Kembali ke Beranda</Button></Link>
+          <Link href="/"><Button className="mt-4 bg-blue-600">Kembali ke Beranda</Button></Link>
         </div>
       </div>
     );
@@ -173,7 +173,7 @@ export default function Watch() {
   const isPremiumLocked = video.minimumPlan && video.minimumPlan !== "basic" && !isSignedIn;
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] text-white">
+    <div className="min-h-screen bg-[#0a0f1e] text-white">
       <Navbar />
       <div className="pt-16 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
@@ -221,13 +221,13 @@ export default function Watch() {
                           if (videoRef.current) videoRef.current.currentTime = t;
                           setCurrentTime(t);
                         }}
-                        className="w-full h-1 mb-3 accent-red-500 cursor-pointer"
+                        className="w-full h-1 mb-3 accent-yellow-400 cursor-pointer"
                       />
                       <div className="flex items-center gap-3">
-                        <button onClick={togglePlay} className="text-white hover:text-red-400">
+                        <button onClick={togglePlay} className="text-white hover:text-yellow-400">
                           {playing ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current" />}
                         </button>
-                        <button onClick={() => setMuted(!muted)} className="text-white hover:text-red-400">
+                        <button onClick={() => setMuted(!muted)} className="text-white hover:text-yellow-400">
                           {muted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                         </button>
                         <span className="text-xs text-gray-300 ml-auto">
@@ -235,7 +235,7 @@ export default function Watch() {
                         </span>
                         <button
                           onClick={() => videoRef.current?.requestFullscreen()}
-                          className="text-white hover:text-red-400"
+                          className="text-white hover:text-yellow-400"
                         >
                           <Maximize2 className="w-5 h-5" />
                         </button>
@@ -257,7 +257,7 @@ export default function Watch() {
             {/* Video info */}
             <div>
               {video.genre && (
-                <Badge className="mb-2 bg-red-600 border-0 text-xs">{video.genre}</Badge>
+                <Badge className="mb-2 bg-blue-600 border-0 text-xs">{video.genre}</Badge>
               )}
               <h1 className="text-2xl font-bold text-white">{video.title}</h1>
               <div className="flex items-center gap-4 mt-2 text-sm text-gray-400 flex-wrap">
@@ -280,9 +280,9 @@ export default function Watch() {
                   variant="outline"
                   size="sm"
                   onClick={handleLike}
-                  className={`gap-2 border-gray-700 ${liked ? "text-red-500 border-red-500 bg-red-500/10" : "text-gray-300 hover:text-white"}`}
+                  className={`gap-2 border-gray-700 ${liked ? "text-yellow-400 border-yellow-400 bg-yellow-400/10" : "text-gray-300 hover:text-white"}`}
                 >
-                  <ThumbsUp className={`w-4 h-4 ${liked ? "fill-red-500" : ""}`} />
+                  <ThumbsUp className={`w-4 h-4 ${liked ? "fill-yellow-400" : ""}`} />
                   {likeCount.toLocaleString("id-ID")}
                 </Button>
                 <Button
@@ -325,7 +325,7 @@ export default function Watch() {
               {isSignedIn ? (
                 <div className="flex gap-3 mb-6">
                   <Avatar className="w-9 h-9 flex-shrink-0">
-                    <AvatarFallback className="bg-red-600 text-white text-sm">A</AvatarFallback>
+                    <AvatarFallback className="bg-blue-600 text-white text-sm">A</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 space-y-2">
                     <Textarea
@@ -340,7 +340,7 @@ export default function Watch() {
                         size="sm"
                         onClick={handleComment}
                         disabled={!commentText.trim() || createComment.isPending}
-                        className="bg-red-600 hover:bg-red-700 gap-2"
+                        className="bg-blue-600 hover:bg-blue-700 gap-2"
                       >
                         <Send className="w-3 h-3" />
                         Kirim
@@ -350,7 +350,7 @@ export default function Watch() {
                 </div>
               ) : (
                 <div className="mb-6 p-3 rounded-lg bg-gray-900/60 text-sm text-gray-400 text-center">
-                  <Link href="/sign-in" className="text-red-400 hover:text-red-300">Masuk</Link> untuk berkomentar
+                  <Link href="/sign-in" className="text-yellow-400 hover:text-yellow-300">Masuk</Link> untuk berkomentar
                 </div>
               )}
 
@@ -398,7 +398,7 @@ export default function Watch() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white line-clamp-2 group-hover:text-red-400 transition-colors">{v.title}</p>
+                    <p className="text-sm font-medium text-white line-clamp-2 group-hover:text-yellow-400 transition-colors">{v.title}</p>
                     <p className="text-xs text-gray-500 mt-1">{v.uploaderName}</p>
                     <p className="text-xs text-gray-600">{(v.viewCount ?? 0).toLocaleString("id-ID")} tayangan</p>
                   </div>

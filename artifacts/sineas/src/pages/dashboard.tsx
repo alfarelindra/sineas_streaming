@@ -38,11 +38,11 @@ export default function Dashboard() {
 
   if (!isSignedIn) {
     return (
-      <div className="min-h-screen bg-[#0f0f0f] text-white">
+      <div className="min-h-screen bg-[#0a0f1e] text-white">
         <Navbar />
         <div className="pt-36 text-center">
           <h2 className="text-2xl font-bold mb-4">Masuk untuk melihat dashboard</h2>
-          <Link href="/sign-in"><Button className="bg-red-600 hover:bg-red-700">Masuk</Button></Link>
+          <Link href="/sign-in"><Button className="bg-blue-600 hover:bg-blue-700">Masuk</Button></Link>
         </div>
       </div>
     );
@@ -58,7 +58,7 @@ export default function Dashboard() {
   const maxGenreCount = Math.max(...genreData.map((g: any) => g.count), 1);
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] text-white">
+    <div className="min-h-screen bg-[#0a0f1e] text-white">
       <Navbar />
       <div className="pt-24 max-w-5xl mx-auto px-6 pb-16">
         <div className="mb-8 flex items-center justify-between">
@@ -67,7 +67,7 @@ export default function Dashboard() {
             <p className="text-gray-400 text-sm mt-1">Statistik platform & performa videomu</p>
           </div>
           <Link href="/upload">
-            <Button className="bg-red-600 hover:bg-red-700 gap-2">
+            <Button className="bg-blue-600 hover:bg-blue-700 gap-2">
               <Upload className="w-4 h-4" /> Upload Video
             </Button>
           </Link>
@@ -87,7 +87,7 @@ export default function Dashboard() {
         <div className="mb-8">
           <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Videomu</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <StatCard icon={<Play className="w-5 h-5 text-red-400" />} label="Video Diupload" value={myVideos.length} color="bg-red-500/20" />
+            <StatCard icon={<Play className="w-5 h-5 text-yellow-400" />} label="Video Diupload" value={myVideos.length} color="bg-yellow-400/20" />
             <StatCard icon={<Eye className="w-5 h-5 text-amber-400" />} label="Total Tayangan" value={formatNum(totalViews)} color="bg-amber-500/20" />
             <StatCard icon={<ThumbsUp className="w-5 h-5 text-pink-400" />} label="Total Like" value={formatNum(totalLikes)} color="bg-pink-500/20" />
           </div>
@@ -106,7 +106,7 @@ export default function Dashboard() {
                   <span className="w-24 text-sm text-gray-300 flex-shrink-0">{g.genre}</span>
                   <div className="flex-1 bg-gray-800 rounded-full h-2.5 overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-red-500 to-red-400 rounded-full transition-all duration-700"
+                      className="h-full bg-gradient-to-r from-blue-500 to-yellow-400 rounded-full transition-all duration-700"
                       style={{ width: `${(g.count / maxGenreCount) * 100}%` }}
                     />
                   </div>
@@ -159,7 +159,7 @@ export default function Dashboard() {
             <Film className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p className="text-lg font-medium">Belum ada video</p>
             <p className="text-sm mt-1">Upload videomu pertama dan mulai berkarya!</p>
-            <Link href="/upload"><Button className="mt-4 bg-red-600 hover:bg-red-700">Upload Sekarang</Button></Link>
+            <Link href="/upload"><Button className="mt-4 bg-blue-600 hover:bg-blue-700">Upload Sekarang</Button></Link>
           </div>
         )}
       </div>

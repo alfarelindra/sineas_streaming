@@ -114,7 +114,7 @@ export default function SearchPage() {
   const activeFilters = [genre, duration, contentType].filter(Boolean).length;
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] text-white">
+    <div className="min-h-screen bg-[#0a0f1e] text-white">
       <Navbar onSearch={handleSearch} />
 
       <div className="pt-20 max-w-screen-2xl mx-auto px-4 sm:px-8 pb-16">
@@ -128,7 +128,7 @@ export default function SearchPage() {
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch(query)}
               placeholder="Cari film, serial, kreator..."
-              className="w-full bg-gray-900 border border-gray-700 focus:border-red-500 rounded-2xl pl-12 pr-12 py-4 text-lg text-white placeholder:text-gray-500 outline-none transition-colors"
+              className="w-full bg-gray-900 border border-gray-700 focus:border-yellow-400 rounded-2xl pl-12 pr-12 py-4 text-lg text-white placeholder:text-gray-500 outline-none transition-colors"
             />
             {query && (
               <button
@@ -148,7 +148,7 @@ export default function SearchPage() {
                 onClick={() => setSortBy(s.value)}
                 className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   sortBy === s.value
-                    ? "bg-red-600 text-white"
+                    ? "bg-blue-600 text-white"
                     : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
                 }`}
               >
@@ -165,14 +165,14 @@ export default function SearchPage() {
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm border transition-colors ${
               showFilters || activeFilters > 0
-                ? "border-red-500 text-red-400 bg-red-500/10"
+                ? "border-yellow-400 text-yellow-400 bg-yellow-400/10"
                 : "border-gray-700 text-gray-400 hover:border-gray-500 hover:text-white"
             }`}
           >
             <SlidersHorizontal className="w-4 h-4" />
             Filter
             {activeFilters > 0 && (
-              <span className="bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+              <span className="bg-yellow-400 text-blue-950 text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
                 {activeFilters}
               </span>
             )}
@@ -183,7 +183,7 @@ export default function SearchPage() {
           {genre && (
             <button
               onClick={() => setGenre("")}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-sm bg-red-500/20 text-red-300 border border-red-500/30 hover:bg-red-500/30 transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-sm bg-yellow-400/20 text-yellow-300 border border-yellow-400/30 hover:bg-yellow-400/30 transition-colors"
             >
               {genre} <X className="w-3 h-3" />
             </button>
@@ -191,7 +191,7 @@ export default function SearchPage() {
           {duration && (
             <button
               onClick={() => setDuration("")}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-sm bg-red-500/20 text-red-300 border border-red-500/30 hover:bg-red-500/30 transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-sm bg-yellow-400/20 text-yellow-300 border border-yellow-400/30 hover:bg-yellow-400/30 transition-colors"
             >
               {DURATION_FILTERS.find(d => d.value === duration)?.label} <X className="w-3 h-3" />
             </button>
@@ -199,7 +199,7 @@ export default function SearchPage() {
           {contentType && (
             <button
               onClick={() => setContentType("")}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-sm bg-red-500/20 text-red-300 border border-red-500/30 hover:bg-red-500/30 transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-sm bg-yellow-400/20 text-yellow-300 border border-yellow-400/30 hover:bg-yellow-400/30 transition-colors"
             >
               {contentType === "premium" ? "Premium" : "Gratis"} <X className="w-3 h-3" />
             </button>
@@ -207,7 +207,7 @@ export default function SearchPage() {
           {activeFilters > 0 && (
             <button
               onClick={() => { setGenre(""); setDuration(""); setContentType(""); }}
-              className="text-xs text-gray-500 hover:text-red-400 transition-colors"
+              className="text-xs text-gray-500 hover:text-yellow-400 transition-colors"
             >
               Reset semua
             </button>
@@ -223,7 +223,7 @@ export default function SearchPage() {
               <div className="flex flex-wrap gap-2">
                 <Badge
                   variant={!genre ? "default" : "outline"}
-                  className={`cursor-pointer px-3 py-1.5 ${!genre ? "bg-red-600 hover:bg-red-700 border-0" : "border-gray-700 text-gray-400 hover:text-white hover:border-gray-500"}`}
+                  className={`cursor-pointer px-3 py-1.5 ${!genre ? "bg-blue-600 hover:bg-blue-700 border-0" : "border-gray-700 text-gray-400 hover:text-white hover:border-gray-500"}`}
                   onClick={() => { setGenre(""); setPage(1); }}
                 >
                   Semua
@@ -232,7 +232,7 @@ export default function SearchPage() {
                   <Badge
                     key={g.slug}
                     variant={genre === g.name ? "default" : "outline"}
-                    className={`cursor-pointer px-3 py-1.5 ${genre === g.name ? "bg-red-600 hover:bg-red-700 border-0" : "border-gray-700 text-gray-400 hover:text-white hover:border-gray-500"}`}
+                    className={`cursor-pointer px-3 py-1.5 ${genre === g.name ? "bg-blue-600 hover:bg-blue-700 border-0" : "border-gray-700 text-gray-400 hover:text-white hover:border-gray-500"}`}
                     onClick={() => { setGenre(genre === g.name ? "" : g.name); setPage(1); }}
                   >
                     {g.name}
@@ -252,7 +252,7 @@ export default function SearchPage() {
                     onClick={() => setDuration(d.value)}
                     className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
                       duration === d.value
-                        ? "bg-red-600 text-white"
+                        ? "bg-blue-600 text-white"
                         : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
                     }`}
                   >
@@ -272,7 +272,7 @@ export default function SearchPage() {
                     onClick={() => setContentType(t.value)}
                     className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
                       contentType === t.value
-                        ? "bg-red-600 text-white"
+                        ? "bg-blue-600 text-white"
                         : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
                     }`}
                   >
@@ -372,7 +372,7 @@ export default function SearchPage() {
                         onClick={() => setPage(p)}
                         className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${
                           p === page
-                            ? "bg-red-600 text-white"
+                            ? "bg-blue-600 text-white"
                             : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
                         }`}
                       >

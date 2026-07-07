@@ -21,7 +21,7 @@ function getInitials(name: string) {
 }
 
 const PALETTE = [
-  "from-red-600 to-rose-800",
+  "from-blue-600 to-rose-800",
   "from-blue-600 to-blue-900",
   "from-purple-600 to-purple-900",
   "from-green-600 to-green-900",
@@ -55,7 +55,7 @@ export default function CreatorPage() {
   const gradient = avatarGradient(creatorId);
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] text-white">
+    <div className="min-h-screen bg-[#0a0f1e] text-white">
       <Navbar />
 
       {/* Banner */}
@@ -65,7 +65,7 @@ export default function CreatorPage() {
         {/* Profile header */}
         <div className="-mt-14 sm:-mt-16 mb-10 flex flex-col sm:flex-row items-start sm:items-end gap-4">
           <div
-            className={`w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center text-white text-3xl font-black border-4 border-[#0f0f0f] flex-shrink-0 shadow-xl`}
+            className={`w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center text-white text-3xl font-black border-4 border-[#0a0f1e] flex-shrink-0 shadow-xl`}
           >
             {isLoading ? (
               <User className="w-10 h-10 opacity-50" />
@@ -89,7 +89,7 @@ export default function CreatorPage() {
           <div className="flex gap-6 sm:gap-10 mb-10 border-b border-white/10 pb-8">
             <div className="text-center">
               <div className="flex items-center gap-2 text-2xl font-black text-white">
-                <Film className="w-5 h-5 text-red-400" />
+                <Film className="w-5 h-5 text-yellow-400" />
                 {creatorVideos.length}
               </div>
               <p className="text-xs text-gray-500 mt-0.5">Video</p>
