@@ -127,6 +127,41 @@ router.get("/videos/continue-watching", requireAuth, async (req, res): Promise<v
   res.json(result);
 });
 
+// GET /videos/history  (full watch history incl. completed, paginated) — must precede /videos/:id
+router.get("/videos/history", requireAuth, async (req, res): Promise<void> => {
+  const clerkId = (req as any).auth.userId;
+  const page = Math.max(1, parseInt(String(req.query.page ?? 1), 10) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit ?? 24), 10) || 24));
+  const offset = (page - 1) * limit;
+
+  const [progresses, countResult] = await Promise.all([
+    db.select().from(watchProgressTable)
+      .where(eq(watchProgressTable.userClerkId, clerkId))
+      .orderBy(desc(watchProgressTable.updatedAt))
+      .limit(limit).offset(offset),
+    db.select({ count: sql<number>`count(*)` }).from(watchProgressTable)
+      .where(eq(watchProgressTable.userClerkId, clerkId)),
+  ]);
+
+  const videoIds = progresses.map(p => p.videoId);
+  let items: any[] = [];
+  if (videoIds.length) {
+    const videos = await db.select().from(videosTable).where(sql`${videosTable.id} = ANY(${videoIds})`);
+    const videoMap = new Map(videos.map(v => [v.id, v]));
+    items = progresses
+      .filter(p => videoMap.has(p.videoId))
+      .map(p => ({
+        ...formatVideo(videoMap.get(p.videoId)!),
+        progressSeconds: p.progressSeconds,
+        progressPercent: p.progressPercent,
+        completed: p.completed,
+        watchedAt: p.updatedAt.toISOString(),
+      }));
+  }
+
+  res.json({ items, total: Number(countResult[0]?.count ?? 0), page, limit });
+});
+
 // DELETE /videos/history  (clear entire watch history) — must precede /videos/:id
 router.delete("/videos/history", requireAuth, async (req, res): Promise<void> => {
   const clerkId = (req as any).auth.userId;

@@ -186,6 +186,24 @@ paths:
           description: Deleted
 
   /videos/history:
+    get:
+      operationId: getWatchHistory
+      tags: [videos]
+      summary: Get the user's full watch history (includes completed items), paginated
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 24 }
+      responses:
+        "200":
+          description: Watch history ordered by last watched
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WatchHistoryList"
     delete:
       operationId: clearWatchHistory
       tags: [videos]
@@ -600,6 +618,29 @@ components:
           properties:
             progressSeconds: { type: integer }
             progressPercent: { type: integer }
+
+    VideoHistoryEntry:
+      allOf:
+        - $ref: "#/components/schemas/Video"
+        - type: object
+          required: [progressSeconds, progressPercent, completed, watchedAt]
+          properties:
+            progressSeconds: { type: integer }
+            progressPercent: { type: integer }
+            completed: { type: boolean }
+            watchedAt: { type: string, format: date-time, description: "When the video was last watched" }
+
+    WatchHistoryList:
+      type: object
+      required: [items, total, page, limit]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/VideoHistoryEntry"
+        total: { type: integer }
+        page: { type: integer }
+        limit: { type: integer }
 
     VideoInput:
       type: object

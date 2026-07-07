@@ -27,6 +27,7 @@ import type {
   ErrorEnvelope,
   Genre,
   GetTrendingVideosParams,
+  GetWatchHistoryParams,
   HealthStatus,
   LikeStatus,
   ListVideosParams,
@@ -43,6 +44,7 @@ import type {
   VideoList,
   VideoUpdate,
   VideoWithProgress,
+  WatchHistoryList,
   WatchProgress,
   WatchProgressInput,
   WatchlistInput,
@@ -750,6 +752,90 @@ export const useDeleteVideo = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getDeleteVideoMutationOptions(options));
     }
+
+export const getGetWatchHistoryUrl = (params?: GetWatchHistoryParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/videos/history?${stringifiedParams}` : `/api/videos/history`
+}
+
+/**
+ * @summary Get the user's full watch history (includes completed items), paginated
+ */
+export const getWatchHistory = async (params?: GetWatchHistoryParams, options?: RequestInit): Promise<WatchHistoryList> => {
+
+  return customFetch<WatchHistoryList>(getGetWatchHistoryUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetWatchHistoryQueryKey = (params?: GetWatchHistoryParams,) => {
+    return [
+    `/api/videos/history`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetWatchHistoryQueryOptions = <TData = Awaited<ReturnType<typeof getWatchHistory>>, TError = ErrorType<unknown>>(params?: GetWatchHistoryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWatchHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetWatchHistoryQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWatchHistory>>> = ({ signal }) => getWatchHistory(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getWatchHistory>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetWatchHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof getWatchHistory>>>
+export type GetWatchHistoryQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get the user's full watch history (includes completed items), paginated
+ */
+
+export function useGetWatchHistory<TData = Awaited<ReturnType<typeof getWatchHistory>>, TError = ErrorType<unknown>>(
+ params?: GetWatchHistoryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWatchHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetWatchHistoryQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export const getClearWatchHistoryUrl = () => {
 

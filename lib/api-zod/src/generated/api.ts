@@ -232,6 +232,47 @@ export const DeleteVideoParams = zod.object({
 
 
 /**
+ * @summary Get the user's full watch history (includes completed items), paginated
+ */
+export const getWatchHistoryQueryPageDefault = 1;
+export const getWatchHistoryQueryLimitDefault = 24;
+
+export const GetWatchHistoryQueryParams = zod.object({
+  "page": zod.coerce.number().default(getWatchHistoryQueryPageDefault),
+  "limit": zod.coerce.number().default(getWatchHistoryQueryLimitDefault)
+})
+
+export const GetWatchHistoryResponse = zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "uploaderName": zod.string(),
+  "uploaderId": zod.string().optional(),
+  "videoUrl": zod.string(),
+  "thumbnailUrl": zod.string().nullable(),
+  "duration": zod.number().describe('Duration in seconds'),
+  "viewCount": zod.number(),
+  "likeCount": zod.number(),
+  "genre": zod.string().nullish(),
+  "isPublic": zod.boolean(),
+  "isPremium": zod.boolean(),
+  "minimumPlan": zod.string().nullish().describe('basic, premium, or ultra'),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+}).and(zod.object({
+  "progressSeconds": zod.number(),
+  "progressPercent": zod.number(),
+  "completed": zod.boolean(),
+  "watchedAt": zod.coerce.date().describe('When the video was last watched')
+}))),
+  "total": zod.number(),
+  "page": zod.number(),
+  "limit": zod.number()
+})
+
+
+/**
  * @summary Remove a single video from the user's watch history
  */
 export const RemoveWatchProgressParams = zod.object({

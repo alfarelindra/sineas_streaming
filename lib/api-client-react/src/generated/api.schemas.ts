@@ -52,6 +52,21 @@ export type VideoWithProgress = Video & {
   progressPercent?: number;
 };
 
+export type VideoHistoryEntry = Video & {
+  progressSeconds: number;
+  progressPercent: number;
+  completed: boolean;
+  /** When the video was last watched */
+  watchedAt: string;
+};
+
+export interface WatchHistoryList {
+  items: VideoHistoryEntry[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export interface VideoInput {
   /** @minLength 1 */
   title: string;
@@ -210,6 +225,11 @@ limit?: number;
 };
 
 export type GetTrendingVideosParams = {
+limit?: number;
+};
+
+export type GetWatchHistoryParams = {
+page?: number;
 limit?: number;
 };
 
