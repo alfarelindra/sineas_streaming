@@ -24,6 +24,7 @@ import type {
   CheckoutSession,
   Comment,
   CommentInput,
+  CreatorProfile,
   ErrorEnvelope,
   Genre,
   GetTrendingVideosParams,
@@ -1860,6 +1861,83 @@ export const useRemoveFromWatchlist = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getRemoveFromWatchlistMutationOptions(options));
     }
+
+export const getGetCreatorProfileUrl = (id: string,) => {
+
+
+
+
+  return `/api/creators/${id}`
+}
+
+/**
+ * @summary Get a creator's public profile
+ */
+export const getCreatorProfile = async (id: string, options?: RequestInit): Promise<CreatorProfile> => {
+
+  return customFetch<CreatorProfile>(getGetCreatorProfileUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCreatorProfileQueryKey = (id: string,) => {
+    return [
+    `/api/creators/${id}`
+    ] as const;
+    }
+
+
+export const getGetCreatorProfileQueryOptions = <TData = Awaited<ReturnType<typeof getCreatorProfile>>, TError = ErrorType<void>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCreatorProfile>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCreatorProfileQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCreatorProfile>>> = ({ signal }) => getCreatorProfile(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCreatorProfile>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCreatorProfileQueryResult = NonNullable<Awaited<ReturnType<typeof getCreatorProfile>>>
+export type GetCreatorProfileQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get a creator's public profile
+ */
+
+export function useGetCreatorProfile<TData = Awaited<ReturnType<typeof getCreatorProfile>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCreatorProfile>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCreatorProfileQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export const getListPlansUrl = () => {
 

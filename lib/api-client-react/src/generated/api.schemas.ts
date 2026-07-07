@@ -136,6 +136,18 @@ export interface CommentInput {
   body: string;
 }
 
+export interface CreatorProfile {
+  clerkId: string;
+  displayName: string;
+  /** @nullable */
+  bio?: string | null;
+  /** @nullable */
+  avatarUrl?: string | null;
+  videoCount: number;
+  totalViews: number;
+  totalLikes: number;
+}
+
 export interface Genre {
   id: number;
   name: string;

@@ -485,6 +485,24 @@ export const RemoveFromWatchlistParams = zod.object({
 
 
 /**
+ * @summary Get a creator's public profile
+ */
+export const GetCreatorProfileParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetCreatorProfileResponse = zod.object({
+  "clerkId": zod.string(),
+  "displayName": zod.string(),
+  "bio": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish(),
+  "videoCount": zod.number(),
+  "totalViews": zod.number(),
+  "totalLikes": zod.number()
+})
+
+
+/**
  * @summary List all subscription plans
  */
 export const ListPlansResponseItem = zod.object({

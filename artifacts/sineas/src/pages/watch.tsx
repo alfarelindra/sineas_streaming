@@ -7,6 +7,7 @@ import {
   useToggleVideoLike,
   useCreateComment,
   useAddToWatchlist,
+  useGetMe,
 } from "@workspace/api-client-react";
 import Navbar from "@/components/Navbar";
 import VideoCard from "@/components/VideoCard";
@@ -41,6 +42,8 @@ export default function Watch() {
   const { id } = useParams<{ id: string }>();
   const videoId = parseInt(id ?? "0");
   const { isSignedIn } = useAuth();
+  const { data: me } = useGetMe({ query: { enabled: !!isSignedIn } as any });
+  const myInitial = (me?.displayName?.trim()?.[0] ?? "S").toUpperCase();
   const { toast } = useToast();
 
   const { data: video, isLoading } = useGetVideo(videoId);
@@ -270,7 +273,16 @@ export default function Watch() {
                   {formatDate(video.createdAt ?? new Date().toISOString())}
                 </span>
                 {video.uploaderName && (
-                  <span className="text-foreground font-medium">{video.uploaderName}</span>
+                  video.uploaderId ? (
+                    <Link
+                      href={`/creator/${encodeURIComponent(video.uploaderId)}`}
+                      className="text-foreground font-medium hover:text-yellow-400 transition-colors"
+                    >
+                      {video.uploaderName}
+                    </Link>
+                  ) : (
+                    <span className="text-foreground font-medium">{video.uploaderName}</span>
+                  )
                 )}
               </div>
 
@@ -325,7 +337,7 @@ export default function Watch() {
               {isSignedIn ? (
                 <div className="flex gap-3 mb-6">
                   <Avatar className="w-9 h-9 flex-shrink-0">
-                    <AvatarFallback className="bg-blue-600 text-white text-sm">A</AvatarFallback>
+                    <AvatarFallback className="bg-blue-600 text-white text-sm">{myInitial}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 space-y-2">
                     <Textarea
@@ -355,22 +367,43 @@ export default function Watch() {
               )}
 
               <div className="space-y-4">
-                {(comments ?? []).map((c: any) => (
-                  <div key={c.id} className="flex gap-3">
+                {(comments ?? []).map((c: any) => {
+                  const authorInitial = c.authorName?.[0]?.toUpperCase() ?? "U";
+                  const avatar = (
                     <Avatar className="w-8 h-8 flex-shrink-0">
                       <AvatarFallback className="bg-muted text-foreground text-xs">
-                        {c.authorName?.[0]?.toUpperCase() ?? "U"}
+                        {authorInitial}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-foreground">{c.authorName}</span>
-                        <span className="text-xs text-muted-foreground">{formatDate(c.createdAt)}</span>
+                  );
+                  return (
+                    <div key={c.id} className="flex gap-3">
+                      {c.authorId ? (
+                        <Link href={`/creator/${encodeURIComponent(c.authorId)}`} className="flex-shrink-0 hover:opacity-80 transition-opacity">
+                          {avatar}
+                        </Link>
+                      ) : (
+                        avatar
+                      )}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          {c.authorId ? (
+                            <Link
+                              href={`/creator/${encodeURIComponent(c.authorId)}`}
+                              className="text-sm font-medium text-foreground hover:text-yellow-400 transition-colors"
+                            >
+                              {c.authorName}
+                            </Link>
+                          ) : (
+                            <span className="text-sm font-medium text-foreground">{c.authorName}</span>
+                          )}
+                          <span className="text-xs text-muted-foreground">{formatDate(c.createdAt)}</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">{c.body}</p>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">{c.body}</p>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

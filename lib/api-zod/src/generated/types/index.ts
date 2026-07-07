@@ -10,6 +10,7 @@ export * from './checkoutInput';
 export * from './checkoutSession';
 export * from './comment';
 export * from './commentInput';
+export * from './creatorProfile';
 export * from './errorEnvelope';
 export * from './genre';
 export * from './getTrendingVideosParams';

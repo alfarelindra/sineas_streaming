@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { usersTable, watchlistTable, videosTable, insertUserSchema } from "@workspace/db";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { UpdateMeBody, AddToWatchlistBody } from "@workspace/api-zod";
 import { requireAuth } from "../middlewares/auth";
 
@@ -112,6 +112,50 @@ router.delete("/users/watchlist/:videoId", requireAuth, async (req, res): Promis
   const videoId = parseInt(raw, 10);
   await db.delete(watchlistTable).where(and(eq(watchlistTable.userClerkId, clerkId), eq(watchlistTable.videoId, videoId)));
   res.status(204).send();
+});
+
+// GET /creators/:id — public creator profile by clerkId
+router.get("/creators/:id", async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const clerkId = decodeURIComponent(raw);
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
+
+  const [stats] = await db
+    .select({
+      count: sql<number>`count(*)::int`,
+      views: sql<number>`coalesce(sum(${videosTable.viewCount}), 0)::int`,
+      likes: sql<number>`coalesce(sum(${videosTable.likeCount}), 0)::int`,
+    })
+    .from(videosTable)
+    .where(and(eq(videosTable.uploaderClerkId, clerkId), eq(videosTable.isPublic, true)));
+
+  const videoCount = stats?.count ?? 0;
+
+  let displayName = user?.displayName;
+  if (!displayName && videoCount > 0) {
+    const [firstVideo] = await db
+      .select({ uploaderName: videosTable.uploaderName })
+      .from(videosTable)
+      .where(and(eq(videosTable.uploaderClerkId, clerkId), eq(videosTable.isPublic, true)))
+      .limit(1);
+    displayName = firstVideo?.uploaderName;
+  }
+
+  if (!user && videoCount === 0) {
+    res.status(404).json({ error: "Kreator tidak ditemukan" });
+    return;
+  }
+
+  res.json({
+    clerkId,
+    displayName: displayName ?? "Kreator Sineas",
+    bio: user?.bio ?? null,
+    avatarUrl: user?.avatarUrl ?? null,
+    videoCount,
+    totalViews: stats?.views ?? 0,
+    totalLikes: stats?.likes ?? 0,
+  });
 });
 
 export { getOrCreateUser };

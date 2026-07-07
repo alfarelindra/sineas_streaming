@@ -445,6 +445,27 @@ paths:
         "204":
           description: Removed
 
+  # ─── Creators ─────────────────────────────────────────────────────────────
+  /creators/{id}:
+    get:
+      operationId: getCreatorProfile
+      tags: [users]
+      summary: Get a creator's public profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Creator profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatorProfile"
+        "404":
+          description: Not found
+
   # ─── Subscription ─────────────────────────────────────────────────────────
   /subscription/plans:
     get:
@@ -754,6 +775,18 @@ components:
       required: [body]
       properties:
         body: { type: string, minLength: 1 }
+
+    CreatorProfile:
+      type: object
+      required: [clerkId, displayName, videoCount, totalViews, totalLikes]
+      properties:
+        clerkId: { type: string }
+        displayName: { type: string }
+        bio: { type: ["string", "null"] }
+        avatarUrl: { type: ["string", "null"] }
+        videoCount: { type: integer }
+        totalViews: { type: integer }
+        totalLikes: { type: integer }
 
     # ─── Genre ───────────────────────────────────────────────────────────────
     Genre:
