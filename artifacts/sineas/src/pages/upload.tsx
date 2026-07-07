@@ -112,12 +112,12 @@ export default function UploadPage() {
 
   if (!isSignedIn) {
     return (
-      <div className="min-h-screen bg-[#0a0f1e] text-white">
+      <div className="min-h-screen bg-background text-foreground">
         <Navbar />
         <div className="text-center py-36">
-          <Film className="w-16 h-16 mx-auto mb-4 text-gray-600" />
+          <Film className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
           <h2 className="text-2xl font-bold mb-2">Masuk untuk Upload</h2>
-          <p className="text-gray-400 mb-6">Bagikan konten video terbaikmu ke seluruh Indonesia</p>
+          <p className="text-muted-foreground mb-6">Bagikan konten video terbaikmu ke seluruh Indonesia</p>
           <Link href="/sign-in">
             <Button className="bg-blue-600 hover:bg-blue-700">Masuk Sekarang</Button>
           </Link>
@@ -127,7 +127,7 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <div className="pt-24 max-w-2xl mx-auto px-6 pb-16">
         {step === "uploading" && (
@@ -137,10 +137,10 @@ export default function UploadPage() {
             </div>
             <div>
               <h2 className="text-xl font-bold mb-2">Mengupload video...</h2>
-              <p className="text-gray-400 text-sm">Mohon tunggu, jangan tutup halaman ini</p>
+              <p className="text-muted-foreground text-sm">Mohon tunggu, jangan tutup halaman ini</p>
             </div>
-            <Progress value={progress} className="max-w-sm mx-auto bg-gray-800" />
-            <p className="text-gray-500 text-sm">{progress}%</p>
+            <Progress value={progress} className="max-w-sm mx-auto bg-muted" />
+            <p className="text-muted-foreground text-sm">{progress}%</p>
           </div>
         )}
 
@@ -148,7 +148,7 @@ export default function UploadPage() {
           <div className="text-center py-24 space-y-4">
             <CheckCircle2 className="w-16 h-16 text-green-400 mx-auto" />
             <h2 className="text-2xl font-bold text-green-400">Video Berhasil Diupload!</h2>
-            <p className="text-gray-400">Videomu kini tersedia di Sineas</p>
+            <p className="text-muted-foreground">Videomu kini tersedia di Sineas</p>
             <div className="flex justify-center gap-3 mt-6">
               <Button onClick={() => setLocation("/")} className="bg-blue-600 hover:bg-blue-700">
                 Kembali ke Beranda
@@ -156,7 +156,7 @@ export default function UploadPage() {
               <Button
                 variant="outline"
                 onClick={() => { setStep("form"); setTitle(""); setDescription(""); setVideoUrl(""); setThumbnailUrl(""); setVideoFile(null); setThumbnailFile(null); setProgress(0); }}
-                className="border-gray-700 text-gray-300"
+                className="border-border text-muted-foreground"
               >
                 Upload Lagi
               </Button>
@@ -168,7 +168,7 @@ export default function UploadPage() {
           <div className="text-center py-24 space-y-4">
             <AlertCircle className="w-16 h-16 text-yellow-400 mx-auto" />
             <h2 className="text-2xl font-bold text-yellow-400">Upload Gagal</h2>
-            <p className="text-gray-400">Terjadi kesalahan. Coba lagi.</p>
+            <p className="text-muted-foreground">Terjadi kesalahan. Coba lagi.</p>
             <Button onClick={() => setStep("form")} className="bg-blue-600 hover:bg-blue-700">Coba Lagi</Button>
           </div>
         )}
@@ -177,49 +177,49 @@ export default function UploadPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <h1 className="text-3xl font-black mb-1">Upload Video</h1>
-              <p className="text-gray-400 text-sm">Bagikan konten terbaikmu</p>
+              <p className="text-muted-foreground text-sm">Bagikan konten terbaikmu</p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="title" className="text-gray-300">Judul <span className="text-yellow-400">*</span></Label>
-              <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Judul video yang menarik" className="bg-gray-900 border-gray-700 text-white" required />
+              <Label htmlFor="title" className="text-muted-foreground">Judul <span className="text-yellow-400">*</span></Label>
+              <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Judul video yang menarik" className="bg-card border-border text-foreground" required />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-gray-300">Deskripsi</Label>
-              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Ceritakan tentang videomu..." rows={3} className="bg-gray-900 border-gray-700 text-white resize-none" />
+              <Label className="text-muted-foreground">Deskripsi</Label>
+              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Ceritakan tentang videomu..." rows={3} className="bg-card border-border text-foreground resize-none" />
             </div>
 
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <Label className="text-gray-300">Sumber Video <span className="text-yellow-400">*</span></Label>
+                <Label className="text-muted-foreground">Sumber Video <span className="text-yellow-400">*</span></Label>
                 <div className="flex items-center gap-2 ml-auto">
-                  <span className="text-xs text-gray-500">URL Langsung</span>
+                  <span className="text-xs text-muted-foreground">URL Langsung</span>
                   <Switch checked={useDirectUrl} onCheckedChange={setUseDirectUrl} />
                 </div>
               </div>
 
               {useDirectUrl ? (
                 <div className="relative">
-                  <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                  <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://example.com/video.mp4" className="pl-9 bg-gray-900 border-gray-700 text-white" />
+                  <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://example.com/video.mp4" className="pl-9 bg-card border-border text-foreground" />
                 </div>
               ) : (
                 <div
                   onClick={() => videoInputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${videoFile ? "border-yellow-400/50 bg-yellow-400/10" : "border-gray-700 hover:border-gray-500"}`}
+                  className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${videoFile ? "border-yellow-400/50 bg-yellow-400/10" : "border-border hover:border-border"}`}
                 >
                   <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={(e) => handleVideoFile(e.target.files?.[0] ?? null)} />
-                  <Film className={`w-8 h-8 mx-auto mb-2 ${videoFile ? "text-yellow-400" : "text-gray-600"}`} />
+                  <Film className={`w-8 h-8 mx-auto mb-2 ${videoFile ? "text-yellow-400" : "text-muted-foreground"}`} />
                   {videoFile ? (
                     <div>
-                      <p className="text-sm font-medium text-white">{videoFile.name}</p>
-                      <p className="text-xs text-gray-500 mt-1">{(videoFile.size / 1024 / 1024).toFixed(1)} MB{duration > 0 && ` · ${Math.floor(duration / 60)}m ${duration % 60}s`}</p>
+                      <p className="text-sm font-medium text-foreground">{videoFile.name}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{(videoFile.size / 1024 / 1024).toFixed(1)} MB{duration > 0 && ` · ${Math.floor(duration / 60)}m ${duration % 60}s`}</p>
                     </div>
                   ) : (
                     <div>
-                      <p className="text-sm text-gray-400">Klik untuk pilih file video</p>
-                      <p className="text-xs text-gray-600 mt-1">MP4, WebM, MOV — maks 2GB</p>
+                      <p className="text-sm text-muted-foreground">Klik untuk pilih file video</p>
+                      <p className="text-xs text-muted-foreground mt-1">MP4, WebM, MOV — maks 2GB</p>
                     </div>
                   )}
                 </div>
@@ -227,64 +227,64 @@ export default function UploadPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-gray-300">Thumbnail</Label>
+              <Label className="text-muted-foreground">Thumbnail</Label>
               <div className="flex gap-3">
                 <div
                   onClick={() => thumbInputRef.current?.click()}
-                  className={`flex-1 border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${thumbnailFile ? "border-yellow-400/50" : "border-gray-700 hover:border-gray-500"}`}
+                  className={`flex-1 border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${thumbnailFile ? "border-yellow-400/50" : "border-border hover:border-border"}`}
                 >
                   <input ref={thumbInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => setThumbnailFile(e.target.files?.[0] ?? null)} />
-                  <Image className={`w-5 h-5 mx-auto mb-1 ${thumbnailFile ? "text-yellow-400" : "text-gray-600"}`} />
-                  <p className="text-xs text-gray-500">{thumbnailFile ? thumbnailFile.name : "Upload gambar"}</p>
+                  <Image className={`w-5 h-5 mx-auto mb-1 ${thumbnailFile ? "text-yellow-400" : "text-muted-foreground"}`} />
+                  <p className="text-xs text-muted-foreground">{thumbnailFile ? thumbnailFile.name : "Upload gambar"}</p>
                 </div>
                 <div className="relative flex-1">
-                  <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                  <Input value={thumbnailUrl} onChange={(e) => setThumbnailUrl(e.target.value)} placeholder="atau URL thumbnail" className="pl-9 bg-gray-900 border-gray-700 text-white h-full" />
+                  <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input value={thumbnailUrl} onChange={(e) => setThumbnailUrl(e.target.value)} placeholder="atau URL thumbnail" className="pl-9 bg-card border-border text-foreground h-full" />
                 </div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-gray-300">Genre</Label>
+              <Label className="text-muted-foreground">Genre</Label>
               <Select value={genre} onValueChange={setGenre}>
-                <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
+                <SelectTrigger className="bg-card border-border text-foreground">
                   <SelectValue placeholder="Pilih genre" />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectContent className="bg-card border-border">
                   {GENRES.map((g) => (
-                    <SelectItem key={g} value={g} className="text-white hover:bg-gray-800">{g}</SelectItem>
+                    <SelectItem key={g} value={g} className="text-foreground hover:bg-muted">{g}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-900 rounded-xl p-4 space-y-1">
+              <div className="bg-card rounded-xl p-4 space-y-1">
                 <div className="flex items-center justify-between">
-                  <Label className="text-gray-300 text-sm">Publik</Label>
+                  <Label className="text-muted-foreground text-sm">Publik</Label>
                   <Switch checked={isPublic} onCheckedChange={setIsPublic} />
                 </div>
-                <p className="text-xs text-gray-600">Video dapat dilihat semua orang</p>
+                <p className="text-xs text-muted-foreground">Video dapat dilihat semua orang</p>
               </div>
-              <div className="bg-gray-900 rounded-xl p-4 space-y-1">
+              <div className="bg-card rounded-xl p-4 space-y-1">
                 <div className="flex items-center justify-between">
-                  <Label className="text-gray-300 text-sm">Premium</Label>
+                  <Label className="text-muted-foreground text-sm">Premium</Label>
                   <Switch checked={isPremium} onCheckedChange={setIsPremium} />
                 </div>
-                <p className="text-xs text-gray-600">Hanya untuk pelanggan</p>
+                <p className="text-xs text-muted-foreground">Hanya untuk pelanggan</p>
               </div>
             </div>
 
             {isPremium && (
               <div className="space-y-2">
-                <Label className="text-gray-300 text-sm">Minimum Paket</Label>
+                <Label className="text-muted-foreground text-sm">Minimum Paket</Label>
                 <Select value={minimumPlan} onValueChange={setMinimumPlan}>
-                  <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
+                  <SelectTrigger className="bg-card border-border text-foreground">
                     <SelectValue placeholder="Pilih minimum paket" />
                   </SelectTrigger>
-                  <SelectContent className="bg-gray-900 border-gray-700">
+                  <SelectContent className="bg-card border-border">
                     {["basic", "premium", "ultra"].map((p) => (
-                      <SelectItem key={p} value={p} className="text-white hover:bg-gray-800 capitalize">{p}</SelectItem>
+                      <SelectItem key={p} value={p} className="text-foreground hover:bg-muted capitalize">{p}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

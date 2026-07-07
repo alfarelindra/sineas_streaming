@@ -79,7 +79,7 @@ export default function Subscription() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <div className="pt-24 max-w-screen-xl mx-auto px-6 pb-24">
         {/* Header */}
@@ -92,7 +92,7 @@ export default function Subscription() {
             Nikmati Hiburan{" "}
             <span className="text-yellow-400">Tanpa Batas</span>
           </h1>
-          <p className="text-gray-400 text-lg max-w-xl mx-auto">
+          <p className="text-muted-foreground text-lg max-w-xl mx-auto">
             Pilih paket yang sesuai untukmu. Batalkan kapan saja.
           </p>
         </div>
@@ -102,11 +102,11 @@ export default function Subscription() {
           <div className="mb-10 bg-green-500/10 border border-green-500/30 rounded-2xl p-6 max-w-md mx-auto text-center">
             <Check className="w-8 h-8 text-green-400 mx-auto mb-2" />
             <h3 className="font-bold text-lg text-green-400">Langganan Aktif</h3>
-            <p className="text-gray-400 text-sm mt-1 capitalize">
-              Paket: <span className="text-white font-medium">{status.plan}</span>
+            <p className="text-muted-foreground text-sm mt-1 capitalize">
+              Paket: <span className="text-foreground font-medium">{status.plan}</span>
             </p>
             {status.currentPeriodEnd && (
-              <p className="text-gray-500 text-xs mt-1">
+              <p className="text-muted-foreground text-xs mt-1">
                 Aktif hingga {new Date(status.currentPeriodEnd).toLocaleDateString("id-ID", { year: "numeric", month: "long", day: "numeric" })}
               </p>
             )}
@@ -126,7 +126,7 @@ export default function Subscription() {
         {loadingPlans ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-96 bg-gray-900 rounded-2xl animate-pulse" />
+              <div key={i} className="h-96 bg-card rounded-2xl animate-pulse" />
             ))}
           </div>
         ) : (
@@ -151,11 +151,11 @@ export default function Subscription() {
                   )}
 
                   <div className="flex items-center gap-3 mb-4">
-                    <div className={`p-2 rounded-xl bg-white/10 ${isPopular ? "text-amber-400" : "text-gray-300"}`}>
+                    <div className={`p-2 rounded-xl bg-white/10 ${isPopular ? "text-amber-400" : "text-muted-foreground"}`}>
                       {PLAN_ICONS[plan.tier ?? plan.id] ?? <Star className="w-6 h-6" />}
                     </div>
                     <div>
-                      <h3 className="font-black text-xl text-white">{plan.name}</h3>
+                      <h3 className="font-black text-xl text-foreground">{plan.name}</h3>
                       {isCurrentPlan && (
                         <Badge className="text-[10px] bg-green-500/20 text-green-400 border-green-500/30">
                           Aktif
@@ -166,18 +166,18 @@ export default function Subscription() {
 
                   <div className="mb-6">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-black text-white">
+                      <span className="text-4xl font-black text-foreground">
                         {formatIDR(plan.amount).replace("Rp", "").trim()}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-400 mt-0.5">
+                    <p className="text-sm text-muted-foreground mt-0.5">
                       Rp/bulan · dibatalkan kapan saja
                     </p>
                   </div>
 
                   <ul className="space-y-2.5 mb-8 flex-1">
                     {(plan.features ?? []).map((f: string, i: number) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-gray-300">
+                      <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
                         <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
                         {f}
                       </li>
@@ -187,7 +187,7 @@ export default function Subscription() {
                   <Button
                     onClick={() => handleSubscribe(plan.priceId)}
                     disabled={isCurrentPlan || createCheckout.isPending}
-                    className={`w-full font-bold ${isCurrentPlan ? "bg-gray-700 text-gray-400 cursor-not-allowed" : btnClass}`}
+                    className={`w-full font-bold ${isCurrentPlan ? "bg-muted text-muted-foreground cursor-not-allowed" : btnClass}`}
                   >
                     {isCurrentPlan ? "Paket Saat Ini" : `Pilih ${plan.name}`}
                   </Button>
@@ -199,7 +199,7 @@ export default function Subscription() {
 
         {/* FAQ / Notes */}
         <div className="mt-16 max-w-2xl mx-auto text-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Pembayaran melalui Stripe. Semua harga dalam Rupiah Indonesia.
             Dengan berlangganan, kamu setuju dengan{" "}
             <span className="text-yellow-400 cursor-pointer">Syarat & Ketentuan</span> Sineas.

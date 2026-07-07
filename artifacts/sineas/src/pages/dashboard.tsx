@@ -14,12 +14,12 @@ function StatCard({ icon, label, value, sub, color }: {
   color: string;
 }) {
   return (
-    <div className="bg-gray-900/60 border border-white/5 rounded-2xl p-5 flex items-start gap-4">
+    <div className="bg-card/60 border border-white/5 rounded-2xl p-5 flex items-start gap-4">
       <div className={`p-3 rounded-xl ${color}`}>{icon}</div>
       <div>
-        <p className="text-gray-400 text-xs">{label}</p>
-        <p className="text-2xl font-black text-white mt-0.5">{value}</p>
-        {sub && <p className="text-xs text-gray-500 mt-0.5">{sub}</p>}
+        <p className="text-muted-foreground text-xs">{label}</p>
+        <p className="text-2xl font-black text-foreground mt-0.5">{value}</p>
+        {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
       </div>
     </div>
   );
@@ -38,7 +38,7 @@ export default function Dashboard() {
 
   if (!isSignedIn) {
     return (
-      <div className="min-h-screen bg-[#0a0f1e] text-white">
+      <div className="min-h-screen bg-background text-foreground">
         <Navbar />
         <div className="pt-36 text-center">
           <h2 className="text-2xl font-bold mb-4">Masuk untuk melihat dashboard</h2>
@@ -58,13 +58,13 @@ export default function Dashboard() {
   const maxGenreCount = Math.max(...genreData.map((g: any) => g.count), 1);
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <div className="pt-24 max-w-5xl mx-auto px-6 pb-16">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-black">Creator Dashboard</h1>
-            <p className="text-gray-400 text-sm mt-1">Statistik platform & performa videomu</p>
+            <p className="text-muted-foreground text-sm mt-1">Statistik platform & performa videomu</p>
           </div>
           <Link href="/upload">
             <Button className="bg-blue-600 hover:bg-blue-700 gap-2">
@@ -75,7 +75,7 @@ export default function Dashboard() {
 
         {/* Platform-wide stats */}
         <div className="mb-8">
-          <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Platform Sineas</h2>
+          <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">Platform Sineas</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <StatCard icon={<Film className="w-5 h-5 text-blue-400" />} label="Total Video" value={formatNum(stats?.totalVideos ?? 0)} color="bg-blue-500/20" />
             <StatCard icon={<Eye className="w-5 h-5 text-green-400" />} label="Total Tayangan" value={formatNum(stats?.totalViews ?? 0)} color="bg-green-500/20" />
@@ -85,7 +85,7 @@ export default function Dashboard() {
 
         {/* My video stats */}
         <div className="mb-8">
-          <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Videomu</h2>
+          <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">Videomu</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <StatCard icon={<Play className="w-5 h-5 text-yellow-400" />} label="Video Diupload" value={myVideos.length} color="bg-yellow-400/20" />
             <StatCard icon={<Eye className="w-5 h-5 text-amber-400" />} label="Total Tayangan" value={formatNum(totalViews)} color="bg-amber-500/20" />
@@ -96,21 +96,21 @@ export default function Dashboard() {
         {/* Genre breakdown */}
         {genreData.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">
+            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4">
               <BarChart3 className="w-4 h-4 inline mr-1" />
               Video per Genre
             </h2>
-            <div className="bg-gray-900/60 border border-white/5 rounded-2xl p-6 space-y-4">
+            <div className="bg-card/60 border border-white/5 rounded-2xl p-6 space-y-4">
               {genreData.map((g: any) => (
                 <div key={g.genre} className="flex items-center gap-3">
-                  <span className="w-24 text-sm text-gray-300 flex-shrink-0">{g.genre}</span>
-                  <div className="flex-1 bg-gray-800 rounded-full h-2.5 overflow-hidden">
+                  <span className="w-24 text-sm text-muted-foreground flex-shrink-0">{g.genre}</span>
+                  <div className="flex-1 bg-muted rounded-full h-2.5 overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-blue-500 to-yellow-400 rounded-full transition-all duration-700"
                       style={{ width: `${(g.count / maxGenreCount) * 100}%` }}
                     />
                   </div>
-                  <span className="w-8 text-sm text-gray-500 text-right">{g.count}</span>
+                  <span className="w-8 text-sm text-muted-foreground text-right">{g.count}</span>
                 </div>
               ))}
             </div>
@@ -120,12 +120,12 @@ export default function Dashboard() {
         {/* My videos table */}
         {myVideos.length > 0 && (
           <div>
-            <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">
+            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4">
               <TrendingUp className="w-4 h-4 inline mr-1" />
               Performa Video
             </h2>
-            <div className="bg-gray-900/60 border border-white/5 rounded-2xl overflow-hidden">
-              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-5 py-3 border-b border-white/5 text-xs text-gray-500 font-medium uppercase tracking-wider">
+            <div className="bg-card/60 border border-white/5 rounded-2xl overflow-hidden">
+              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-5 py-3 border-b border-white/5 text-xs text-muted-foreground font-medium uppercase tracking-wider">
                 <span>Judul</span>
                 <span className="text-right">Tayangan</span>
                 <span className="text-right">Like</span>
@@ -138,15 +138,15 @@ export default function Dashboard() {
                       {v.thumbnailUrl ? (
                         <img src={v.thumbnailUrl} className="w-12 h-8 object-cover rounded flex-shrink-0" />
                       ) : (
-                        <div className="w-12 h-8 bg-gray-800 rounded flex-shrink-0 flex items-center justify-center">
-                          <Play className="w-3 h-3 text-gray-600" />
+                        <div className="w-12 h-8 bg-muted rounded flex-shrink-0 flex items-center justify-center">
+                          <Play className="w-3 h-3 text-muted-foreground" />
                         </div>
                       )}
-                      <span className="text-sm text-white truncate">{v.title}</span>
+                      <span className="text-sm text-foreground truncate">{v.title}</span>
                     </div>
-                    <span className="text-sm text-gray-400 text-right">{formatNum(v.viewCount ?? 0)}</span>
-                    <span className="text-sm text-gray-400 text-right">{formatNum(v.likeCount ?? 0)}</span>
-                    <span className="text-xs text-gray-600 text-right">{v.genre ?? "—"}</span>
+                    <span className="text-sm text-muted-foreground text-right">{formatNum(v.viewCount ?? 0)}</span>
+                    <span className="text-sm text-muted-foreground text-right">{formatNum(v.likeCount ?? 0)}</span>
+                    <span className="text-xs text-muted-foreground text-right">{v.genre ?? "—"}</span>
                   </div>
                 </Link>
               ))}
@@ -155,7 +155,7 @@ export default function Dashboard() {
         )}
 
         {myVideos.length === 0 && (
-          <div className="text-center py-16 text-gray-500 bg-gray-900/40 rounded-2xl">
+          <div className="text-center py-16 text-muted-foreground bg-card/40 rounded-2xl">
             <Film className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p className="text-lg font-medium">Belum ada video</p>
             <p className="text-sm mt-1">Upload videomu pertama dan mulai berkarya!</p>

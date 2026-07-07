@@ -114,26 +114,26 @@ export default function SearchPage() {
   const activeFilters = [genre, duration, contentType].filter(Boolean).length;
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar onSearch={handleSearch} />
 
       <div className="pt-20 max-w-screen-2xl mx-auto px-4 sm:px-8 pb-16">
         {/* Search bar besar */}
         <div className="pt-8 pb-6">
           <div className="relative max-w-2xl mx-auto">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
               ref={inputRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch(query)}
               placeholder="Cari film, serial, kreator..."
-              className="w-full bg-gray-900 border border-gray-700 focus:border-yellow-400 rounded-2xl pl-12 pr-12 py-4 text-lg text-white placeholder:text-gray-500 outline-none transition-colors"
+              className="w-full bg-card border border-border focus:border-yellow-400 rounded-2xl pl-12 pr-12 py-4 text-lg text-foreground placeholder:text-muted-foreground outline-none transition-colors"
             />
             {query && (
               <button
                 onClick={clearQuery}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -149,7 +149,7 @@ export default function SearchPage() {
                 className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   sortBy === s.value
                     ? "bg-blue-600 text-white"
-                    : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
+                    : "bg-muted text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
                 {s.icon}
@@ -166,7 +166,7 @@ export default function SearchPage() {
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm border transition-colors ${
               showFilters || activeFilters > 0
                 ? "border-yellow-400 text-yellow-400 bg-yellow-400/10"
-                : "border-gray-700 text-gray-400 hover:border-gray-500 hover:text-white"
+                : "border-border text-muted-foreground hover:border-border hover:text-foreground"
             }`}
           >
             <SlidersHorizontal className="w-4 h-4" />
@@ -207,7 +207,7 @@ export default function SearchPage() {
           {activeFilters > 0 && (
             <button
               onClick={() => { setGenre(""); setDuration(""); setContentType(""); }}
-              className="text-xs text-gray-500 hover:text-yellow-400 transition-colors"
+              className="text-xs text-muted-foreground hover:text-yellow-400 transition-colors"
             >
               Reset semua
             </button>
@@ -216,14 +216,14 @@ export default function SearchPage() {
 
         {/* Expanded filters */}
         {showFilters && (
-          <div className="mb-8 p-5 bg-gray-900/60 border border-white/10 rounded-2xl space-y-5">
+          <div className="mb-8 p-5 bg-card/60 border border-white/10 rounded-2xl space-y-5">
             {/* Genre */}
             <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Genre</p>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Genre</p>
               <div className="flex flex-wrap gap-2">
                 <Badge
                   variant={!genre ? "default" : "outline"}
-                  className={`cursor-pointer px-3 py-1.5 ${!genre ? "bg-blue-600 hover:bg-blue-700 border-0" : "border-gray-700 text-gray-400 hover:text-white hover:border-gray-500"}`}
+                  className={`cursor-pointer px-3 py-1.5 ${!genre ? "bg-blue-600 hover:bg-blue-700 border-0" : "border-border text-muted-foreground hover:text-foreground hover:border-border"}`}
                   onClick={() => { setGenre(""); setPage(1); }}
                 >
                   Semua
@@ -232,7 +232,7 @@ export default function SearchPage() {
                   <Badge
                     key={g.slug}
                     variant={genre === g.name ? "default" : "outline"}
-                    className={`cursor-pointer px-3 py-1.5 ${genre === g.name ? "bg-blue-600 hover:bg-blue-700 border-0" : "border-gray-700 text-gray-400 hover:text-white hover:border-gray-500"}`}
+                    className={`cursor-pointer px-3 py-1.5 ${genre === g.name ? "bg-blue-600 hover:bg-blue-700 border-0" : "border-border text-muted-foreground hover:text-foreground hover:border-border"}`}
                     onClick={() => { setGenre(genre === g.name ? "" : g.name); setPage(1); }}
                   >
                     {g.name}
@@ -244,7 +244,7 @@ export default function SearchPage() {
 
             {/* Durasi */}
             <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Durasi</p>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Durasi</p>
               <div className="flex flex-wrap gap-2">
                 {DURATION_FILTERS.map((d) => (
                   <button
@@ -253,7 +253,7 @@ export default function SearchPage() {
                     className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
                       duration === d.value
                         ? "bg-blue-600 text-white"
-                        : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
+                        : "bg-muted text-muted-foreground hover:bg-muted hover:text-foreground"
                     }`}
                   >
                     {d.label}
@@ -264,7 +264,7 @@ export default function SearchPage() {
 
             {/* Tipe */}
             <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Tipe Konten</p>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Tipe Konten</p>
               <div className="flex gap-2">
                 {TYPE_FILTERS.map((t) => (
                   <button
@@ -273,7 +273,7 @@ export default function SearchPage() {
                     className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
                       contentType === t.value
                         ? "bg-blue-600 text-white"
-                        : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
+                        : "bg-muted text-muted-foreground hover:bg-muted hover:text-foreground"
                     }`}
                   >
                     {t.label}
@@ -287,16 +287,16 @@ export default function SearchPage() {
         {/* Results header */}
         {!isLoading && (
           <div className="flex items-center justify-between mb-4">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-muted-foreground">
               {debouncedQuery ? (
                 <>
-                  <span className="text-white font-semibold">{filtered.length}</span>
+                  <span className="text-foreground font-semibold">{filtered.length}</span>
                   {filtered.length !== data?.total && <span> dari {data?.total}</span>}
                   {" "}hasil untuk{" "}
-                  <span className="text-white font-semibold">"{debouncedQuery}"</span>
+                  <span className="text-foreground font-semibold">"{debouncedQuery}"</span>
                 </>
               ) : (
-                <span><span className="text-white font-semibold">{filtered.length}</span> video</span>
+                <span><span className="text-foreground font-semibold">{filtered.length}</span> video</span>
               )}
             </p>
           </div>
@@ -307,21 +307,21 @@ export default function SearchPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {Array.from({ length: 18 }).map((_, i) => (
               <div key={i}>
-                <div className="aspect-video bg-gray-800 rounded-xl animate-pulse" />
-                <div className="mt-2 h-4 bg-gray-800 rounded animate-pulse w-3/4" />
-                <div className="mt-1 h-3 bg-gray-800 rounded animate-pulse w-1/2" />
+                <div className="aspect-video bg-muted rounded-xl animate-pulse" />
+                <div className="mt-2 h-4 bg-muted rounded animate-pulse w-3/4" />
+                <div className="mt-1 h-3 bg-muted rounded animate-pulse w-1/2" />
               </div>
             ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-32">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-800 mb-6">
-              <Film className="w-10 h-10 text-gray-600" />
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted mb-6">
+              <Film className="w-10 h-10 text-muted-foreground" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">
+            <h2 className="text-xl font-bold text-foreground mb-2">
               {debouncedQuery ? `Tidak ada hasil untuk "${debouncedQuery}"` : "Tidak ada video"}
             </h2>
-            <p className="text-gray-500 text-sm mb-6">
+            <p className="text-muted-foreground text-sm mb-6">
               {debouncedQuery
                 ? "Coba kata kunci lain, atau hapus beberapa filter"
                 : "Coba ketik judul film atau nama kreator"}
@@ -330,7 +330,7 @@ export default function SearchPage() {
               <Button
                 onClick={() => { setGenre(""); setDuration(""); setContentType(""); }}
                 variant="outline"
-                className="border-gray-600 text-gray-300 hover:text-white hover:border-gray-400"
+                className="border-border text-muted-foreground hover:text-foreground hover:border-gray-400"
               >
                 Hapus semua filter
               </Button>
@@ -350,7 +350,7 @@ export default function SearchPage() {
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="px-4 py-2 rounded-lg text-sm bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  className="px-4 py-2 rounded-lg text-sm bg-muted text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
                   ← Sebelumnya
                 </button>
@@ -373,7 +373,7 @@ export default function SearchPage() {
                         className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${
                           p === page
                             ? "bg-blue-600 text-white"
-                            : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
+                            : "bg-muted text-muted-foreground hover:bg-muted hover:text-foreground"
                         }`}
                       >
                         {p}
@@ -384,7 +384,7 @@ export default function SearchPage() {
                 <button
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="px-4 py-2 rounded-lg text-sm bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  className="px-4 py-2 rounded-lg text-sm bg-muted text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
                   Berikutnya →
                 </button>

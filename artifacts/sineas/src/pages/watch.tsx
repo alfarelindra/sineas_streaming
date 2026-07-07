@@ -147,12 +147,12 @@ export default function Watch() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0a0f1e]">
+      <div className="min-h-screen bg-background">
         <Navbar />
         <div className="pt-16 max-w-screen-2xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <div className="aspect-video bg-gray-800 rounded-xl animate-pulse" />
-            <div className="mt-4 h-6 bg-gray-800 rounded animate-pulse w-2/3" />
+            <div className="aspect-video bg-muted rounded-xl animate-pulse" />
+            <div className="mt-4 h-6 bg-muted rounded animate-pulse w-2/3" />
           </div>
         </div>
       </div>
@@ -161,8 +161,8 @@ export default function Watch() {
 
   if (!video) {
     return (
-      <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center">
-        <div className="text-center text-gray-400">
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center text-muted-foreground">
           <p className="text-xl">Video tidak ditemukan</p>
           <Link href="/"><Button className="mt-4 bg-blue-600">Kembali ke Beranda</Button></Link>
         </div>
@@ -173,7 +173,7 @@ export default function Watch() {
   const isPremiumLocked = video.minimumPlan && video.minimumPlan !== "basic" && !isSignedIn;
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <div className="pt-16 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
@@ -259,8 +259,8 @@ export default function Watch() {
               {video.genre && (
                 <Badge className="mb-2 bg-blue-600 border-0 text-xs">{video.genre}</Badge>
               )}
-              <h1 className="text-2xl font-bold text-white">{video.title}</h1>
-              <div className="flex items-center gap-4 mt-2 text-sm text-gray-400 flex-wrap">
+              <h1 className="text-2xl font-bold text-foreground">{video.title}</h1>
+              <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground flex-wrap">
                 <span className="flex items-center gap-1">
                   <Eye className="w-4 h-4" />
                   {(video.viewCount ?? 0).toLocaleString("id-ID")} tayangan
@@ -270,7 +270,7 @@ export default function Watch() {
                   {formatDate(video.createdAt ?? new Date().toISOString())}
                 </span>
                 {video.uploaderName && (
-                  <span className="text-white font-medium">{video.uploaderName}</span>
+                  <span className="text-foreground font-medium">{video.uploaderName}</span>
                 )}
               </div>
 
@@ -280,7 +280,7 @@ export default function Watch() {
                   variant="outline"
                   size="sm"
                   onClick={handleLike}
-                  className={`gap-2 border-gray-700 ${liked ? "text-yellow-400 border-yellow-400 bg-yellow-400/10" : "text-gray-300 hover:text-white"}`}
+                  className={`gap-2 border-border ${liked ? "text-yellow-400 border-yellow-400 bg-yellow-400/10" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   <ThumbsUp className={`w-4 h-4 ${liked ? "fill-yellow-400" : ""}`} />
                   {likeCount.toLocaleString("id-ID")}
@@ -289,7 +289,7 @@ export default function Watch() {
                   variant="outline"
                   size="sm"
                   onClick={handleWatchlist}
-                  className="gap-2 border-gray-700 text-gray-300 hover:text-white"
+                  className="gap-2 border-border text-muted-foreground hover:text-foreground"
                 >
                   <Bookmark className="w-4 h-4" />
                   Simpan
@@ -301,7 +301,7 @@ export default function Watch() {
                     navigator.clipboard.writeText(window.location.href);
                     toast({ title: "Tautan disalin!" });
                   }}
-                  className="gap-2 border-gray-700 text-gray-300 hover:text-white"
+                  className="gap-2 border-border text-muted-foreground hover:text-foreground"
                 >
                   <Share2 className="w-4 h-4" />
                   Bagikan
@@ -309,8 +309,8 @@ export default function Watch() {
               </div>
 
               {video.description && (
-                <div className="mt-4 bg-gray-900/60 rounded-lg p-4">
-                  <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-line">{video.description}</p>
+                <div className="mt-4 bg-card/60 rounded-lg p-4">
+                  <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">{video.description}</p>
                 </div>
               )}
             </div>
@@ -332,7 +332,7 @@ export default function Watch() {
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
                       placeholder="Tambahkan komentar..."
-                      className="bg-gray-900 border-gray-700 text-white resize-none text-sm"
+                      className="bg-card border-border text-foreground resize-none text-sm"
                       rows={2}
                     />
                     <div className="flex justify-end">
@@ -349,7 +349,7 @@ export default function Watch() {
                   </div>
                 </div>
               ) : (
-                <div className="mb-6 p-3 rounded-lg bg-gray-900/60 text-sm text-gray-400 text-center">
+                <div className="mb-6 p-3 rounded-lg bg-card/60 text-sm text-muted-foreground text-center">
                   <Link href="/sign-in" className="text-yellow-400 hover:text-yellow-300">Masuk</Link> untuk berkomentar
                 </div>
               )}
@@ -358,16 +358,16 @@ export default function Watch() {
                 {(comments ?? []).map((c: any) => (
                   <div key={c.id} className="flex gap-3">
                     <Avatar className="w-8 h-8 flex-shrink-0">
-                      <AvatarFallback className="bg-gray-700 text-white text-xs">
+                      <AvatarFallback className="bg-muted text-foreground text-xs">
                         {c.authorName?.[0]?.toUpperCase() ?? "U"}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-white">{c.authorName}</span>
-                        <span className="text-xs text-gray-500">{formatDate(c.createdAt)}</span>
+                        <span className="text-sm font-medium text-foreground">{c.authorName}</span>
+                        <span className="text-xs text-muted-foreground">{formatDate(c.createdAt)}</span>
                       </div>
-                      <p className="text-sm text-gray-300 mt-1">{c.body}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{c.body}</p>
                     </div>
                   </div>
                 ))}
@@ -377,18 +377,18 @@ export default function Watch() {
 
           {/* Sidebar - related videos */}
           <div className="space-y-3">
-            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Video Serupa</h3>
+            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Video Serupa</h3>
             {(related?.videos ?? [])
               .filter((v: any) => v.id !== videoId)
               .slice(0, 7)
               .map((v: any) => (
                 <Link key={v.id} href={`/watch/${v.id}`} className="flex gap-3 group hover:bg-white/5 rounded-lg p-1 transition-colors">
-                  <div className="relative w-32 aspect-video flex-shrink-0 rounded overflow-hidden bg-gray-800">
+                  <div className="relative w-32 aspect-video flex-shrink-0 rounded overflow-hidden bg-muted">
                     {v.thumbnailUrl ? (
                       <img src={v.thumbnailUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <Play className="w-5 h-5 text-gray-600" />
+                        <Play className="w-5 h-5 text-muted-foreground" />
                       </div>
                     )}
                     {v.duration && (
@@ -398,9 +398,9 @@ export default function Watch() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white line-clamp-2 group-hover:text-yellow-400 transition-colors">{v.title}</p>
-                    <p className="text-xs text-gray-500 mt-1">{v.uploaderName}</p>
-                    <p className="text-xs text-gray-600">{(v.viewCount ?? 0).toLocaleString("id-ID")} tayangan</p>
+                    <p className="text-sm font-medium text-foreground line-clamp-2 group-hover:text-yellow-400 transition-colors">{v.title}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{v.uploaderName}</p>
+                    <p className="text-xs text-muted-foreground">{(v.viewCount ?? 0).toLocaleString("id-ID")} tayangan</p>
                   </div>
                 </Link>
               ))}

@@ -51,7 +51,7 @@ export default function Profile() {
 
   if (!isSignedIn) {
     return (
-      <div className="min-h-screen bg-[#0a0f1e] text-white">
+      <div className="min-h-screen bg-background text-foreground">
         <Navbar />
         <div className="text-center py-36">
           <h2 className="text-2xl font-bold mb-4">Masuk untuk Melihat Profil</h2>
@@ -62,7 +62,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <div className="pt-24 max-w-4xl mx-auto px-6 pb-16">
         <div className="flex flex-col sm:flex-row items-start gap-6 mb-10">
@@ -76,36 +76,36 @@ export default function Profile() {
             {editing ? (
               <div className="space-y-3 max-w-sm">
                 <div>
-                  <Label className="text-gray-400 text-xs">Nama Tampilan</Label>
-                  <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="bg-gray-900 border-gray-700 text-white mt-1" />
+                  <Label className="text-muted-foreground text-xs">Nama Tampilan</Label>
+                  <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="bg-card border-border text-foreground mt-1" />
                 </div>
                 <div>
-                  <Label className="text-gray-400 text-xs">Bio</Label>
-                  <Textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={2} className="bg-gray-900 border-gray-700 text-white mt-1 resize-none" />
+                  <Label className="text-muted-foreground text-xs">Bio</Label>
+                  <Textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={2} className="bg-card border-border text-foreground mt-1 resize-none" />
                 </div>
                 <div className="flex gap-2">
                   <Button size="sm" onClick={saveEdit} disabled={updateUser.isPending} className="bg-blue-600 hover:bg-blue-700 gap-1">
                     <Check className="w-3 h-3" /> Simpan
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => setEditing(false)} className="border-gray-700 text-gray-400">Batal</Button>
+                  <Button size="sm" variant="outline" onClick={() => setEditing(false)} className="border-border text-muted-foreground">Batal</Button>
                 </div>
               </div>
             ) : (
               <div>
                 <div className="flex items-center gap-3 flex-wrap">
-                  <h1 className="text-2xl font-black text-white">
+                  <h1 className="text-2xl font-black text-foreground">
                     {dbUser?.displayName ?? clerkUser?.fullName ?? "Pengguna Sineas"}
                   </h1>
                   {subStatus?.isSubscribed && subStatus.plan && (
-                    <Badge className={`text-xs ${planBadge[subStatus.plan]?.color ?? "bg-gray-500/20 text-gray-400"}`}>
+                    <Badge className={`text-xs ${planBadge[subStatus.plan]?.color ?? "bg-gray-500/20 text-muted-foreground"}`}>
                       <Crown className="w-3 h-3 mr-1" />
                       {planBadge[subStatus.plan]?.label ?? subStatus.plan}
                     </Badge>
                   )}
                 </div>
-                {dbUser?.bio && <p className="text-gray-400 text-sm mt-1 max-w-md">{dbUser.bio}</p>}
-                <p className="text-gray-600 text-xs mt-1">{clerkUser?.primaryEmailAddress?.emailAddress}</p>
-                <Button size="sm" variant="outline" onClick={startEdit} className="mt-3 border-gray-700 text-gray-400 hover:text-white gap-1">
+                {dbUser?.bio && <p className="text-muted-foreground text-sm mt-1 max-w-md">{dbUser.bio}</p>}
+                <p className="text-muted-foreground text-xs mt-1">{clerkUser?.primaryEmailAddress?.emailAddress}</p>
+                <Button size="sm" variant="outline" onClick={startEdit} className="mt-3 border-border text-muted-foreground hover:text-foreground gap-1">
                   <Edit3 className="w-3 h-3" /> Edit Profil
                 </Button>
               </div>
@@ -116,18 +116,18 @@ export default function Profile() {
         </div>
 
         <Tabs defaultValue="watchlist">
-          <TabsList className="bg-gray-900 border border-gray-800 mb-6">
-            <TabsTrigger value="watchlist" className="data-[state=active]:bg-gray-800 data-[state=active]:text-white text-gray-400 gap-2">
+          <TabsList className="bg-card border border-border mb-6">
+            <TabsTrigger value="watchlist" className="data-[state=active]:bg-muted data-[state=active]:text-foreground text-muted-foreground gap-2">
               <Bookmark className="w-4 h-4" /> Daftar Tonton
             </TabsTrigger>
-            <TabsTrigger value="subscription" className="data-[state=active]:bg-gray-800 data-[state=active]:text-white text-gray-400 gap-2">
+            <TabsTrigger value="subscription" className="data-[state=active]:bg-muted data-[state=active]:text-foreground text-muted-foreground gap-2">
               <Crown className="w-4 h-4" /> Langganan
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="watchlist">
             {(watchlist ?? []).length === 0 ? (
-              <div className="text-center py-16 text-gray-500">
+              <div className="text-center py-16 text-muted-foreground">
                 <Bookmark className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p>Daftar tontonmu masih kosong</p>
                 <Link href="/browse"><Button size="sm" className="mt-3 bg-blue-600 hover:bg-blue-700">Jelajahi Video</Button></Link>
@@ -142,20 +142,20 @@ export default function Profile() {
           <TabsContent value="subscription">
             <div className="max-w-md">
               {subStatus?.isSubscribed ? (
-                <div className="bg-gray-900 rounded-2xl p-6 space-y-4">
+                <div className="bg-card rounded-2xl p-6 space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-amber-500/20 rounded-xl">
                       <Crown className="w-6 h-6 text-amber-400" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-white capitalize">Paket {subStatus.plan}</h3>
-                      <p className="text-xs text-gray-500 capitalize">{subStatus.status}</p>
+                      <h3 className="font-bold text-foreground capitalize">Paket {subStatus.plan}</h3>
+                      <p className="text-xs text-muted-foreground capitalize">{subStatus.status}</p>
                     </div>
                   </div>
                   {subStatus.currentPeriodEnd && (
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-muted-foreground">
                       Aktif hingga{" "}
-                      <span className="text-white">
+                      <span className="text-foreground">
                         {new Date(subStatus.currentPeriodEnd).toLocaleDateString("id-ID", { year: "numeric", month: "long", day: "numeric" })}
                       </span>
                     </p>
@@ -163,9 +163,9 @@ export default function Profile() {
                   {subStatus.cancelAtPeriodEnd && <p className="text-xs text-amber-400">Akan dibatalkan di akhir periode</p>}
                 </div>
               ) : (
-                <div className="bg-gray-900 rounded-2xl p-6 text-center space-y-4">
-                  <Crown className="w-10 h-10 text-gray-600 mx-auto" />
-                  <p className="text-gray-400">Belum berlangganan</p>
+                <div className="bg-card rounded-2xl p-6 text-center space-y-4">
+                  <Crown className="w-10 h-10 text-muted-foreground mx-auto" />
+                  <p className="text-muted-foreground">Belum berlangganan</p>
                   <Link href="/subscription"><Button className="bg-blue-600 hover:bg-blue-700">Lihat Paket</Button></Link>
                 </div>
               )}

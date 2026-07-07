@@ -95,9 +95,9 @@ export default function NotificationBell({ overDark = true }: { overDark?: boole
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 bg-gray-950 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-            <h3 className="font-bold text-white text-sm">Notifikasi</h3>
+        <div className="absolute right-0 top-full mt-2 w-80 bg-popover border border-border rounded-xl shadow-2xl z-50 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <h3 className="font-bold text-popover-foreground text-sm">Notifikasi</h3>
             {unread > 0 && (
               <button onClick={markAllRead} className="text-xs text-yellow-400 hover:text-yellow-300 transition-colors">
                 Tandai semua dibaca
@@ -107,7 +107,7 @@ export default function NotificationBell({ overDark = true }: { overDark?: boole
 
           <div className="max-h-80 overflow-y-auto">
             {notifs.length === 0 ? (
-              <div className="py-10 text-center text-gray-500 text-sm">
+              <div className="py-10 text-center text-muted-foreground text-sm">
                 <Bell className="w-8 h-8 mx-auto mb-2 opacity-30" />
                 <p>Belum ada notifikasi</p>
               </div>
@@ -119,13 +119,13 @@ export default function NotificationBell({ overDark = true }: { overDark?: boole
                 >
                   {n.link ? (
                     <Link href={n.link} onClick={() => setOpen(false)}>
-                      <p className="text-sm text-white">{n.message}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{formatTime(n.time)}</p>
+                      <p className="text-sm text-popover-foreground">{n.message}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{formatTime(n.time)}</p>
                     </Link>
                   ) : (
                     <>
-                      <p className="text-sm text-white">{n.message}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{formatTime(n.time)}</p>
+                      <p className="text-sm text-popover-foreground">{n.message}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{formatTime(n.time)}</p>
                     </>
                   )}
                   {!n.read && <div className="w-2 h-2 rounded-full bg-yellow-400 float-right mt-1" />}
