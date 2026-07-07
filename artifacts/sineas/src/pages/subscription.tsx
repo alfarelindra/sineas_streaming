@@ -151,7 +151,7 @@ export default function Subscription() {
                   )}
 
                   <div className="flex items-center gap-3 mb-4">
-                    <div className={`p-2 rounded-xl bg-white/10 ${isPopular ? "text-amber-400" : "text-muted-foreground"}`}>
+                    <div className={`p-2 rounded-xl bg-muted ${isPopular ? "text-amber-400" : "text-muted-foreground"}`}>
                       {PLAN_ICONS[plan.tier ?? plan.id] ?? <Star className="w-6 h-6" />}
                     </div>
                     <div>

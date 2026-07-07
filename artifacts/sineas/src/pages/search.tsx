@@ -216,7 +216,7 @@ export default function SearchPage() {
 
         {/* Expanded filters */}
         {showFilters && (
-          <div className="mb-8 p-5 bg-card/60 border border-white/10 rounded-2xl space-y-5">
+          <div className="mb-8 p-5 bg-card/60 border border-border rounded-2xl space-y-5">
             {/* Genre */}
             <div>
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Genre</p>

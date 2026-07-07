@@ -382,7 +382,7 @@ export default function Watch() {
               .filter((v: any) => v.id !== videoId)
               .slice(0, 7)
               .map((v: any) => (
-                <Link key={v.id} href={`/watch/${v.id}`} className="flex gap-3 group hover:bg-white/5 rounded-lg p-1 transition-colors">
+                <Link key={v.id} href={`/watch/${v.id}`} className="flex gap-3 group hover:bg-accent rounded-lg p-1 transition-colors">
                   <div className="relative w-32 aspect-video flex-shrink-0 rounded overflow-hidden bg-muted">
                     {v.thumbnailUrl ? (
                       <img src={v.thumbnailUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />

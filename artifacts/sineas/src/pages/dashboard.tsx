@@ -14,7 +14,7 @@ function StatCard({ icon, label, value, sub, color }: {
   color: string;
 }) {
   return (
-    <div className="bg-card/60 border border-white/5 rounded-2xl p-5 flex items-start gap-4">
+    <div className="bg-card/60 border border-border rounded-2xl p-5 flex items-start gap-4">
       <div className={`p-3 rounded-xl ${color}`}>{icon}</div>
       <div>
         <p className="text-muted-foreground text-xs">{label}</p>
@@ -100,7 +100,7 @@ export default function Dashboard() {
               <BarChart3 className="w-4 h-4 inline mr-1" />
               Video per Genre
             </h2>
-            <div className="bg-card/60 border border-white/5 rounded-2xl p-6 space-y-4">
+            <div className="bg-card/60 border border-border rounded-2xl p-6 space-y-4">
               {genreData.map((g: any) => (
                 <div key={g.genre} className="flex items-center gap-3">
                   <span className="w-24 text-sm text-muted-foreground flex-shrink-0">{g.genre}</span>
@@ -124,8 +124,8 @@ export default function Dashboard() {
               <TrendingUp className="w-4 h-4 inline mr-1" />
               Performa Video
             </h2>
-            <div className="bg-card/60 border border-white/5 rounded-2xl overflow-hidden">
-              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-5 py-3 border-b border-white/5 text-xs text-muted-foreground font-medium uppercase tracking-wider">
+            <div className="bg-card/60 border border-border rounded-2xl overflow-hidden">
+              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-5 py-3 border-b border-border text-xs text-muted-foreground font-medium uppercase tracking-wider">
                 <span>Judul</span>
                 <span className="text-right">Tayangan</span>
                 <span className="text-right">Like</span>
@@ -133,7 +133,7 @@ export default function Dashboard() {
               </div>
               {myVideos.slice(0, 10).map((v: any) => (
                 <Link key={v.id} href={`/watch/${v.id}`}>
-                  <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-5 py-3 border-b border-white/5 hover:bg-white/5 transition-colors items-center">
+                  <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-5 py-3 border-b border-border hover:bg-accent transition-colors items-center">
                     <div className="flex items-center gap-3 min-w-0">
                       {v.thumbnailUrl ? (
                         <img src={v.thumbnailUrl} className="w-12 h-8 object-cover rounded flex-shrink-0" />
