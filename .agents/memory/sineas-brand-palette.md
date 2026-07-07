@@ -23,4 +23,4 @@ Brand = **royal blue + vivid yellow** on a **midnight-navy** background (from us
 
 ## Known gaps
 - **Light mode tokenized only on priority surfaces** (home, browse, history, watchlist + shared VideoCard/VideoRow/Navbar). Secondary pages (watch, upload, subscription, profile, dashboard, search, creator, not-found, App.tsx auth wrappers, NotificationBell dropdown panel) still hardcode dark styles and are unreadable in Light Mode.
-- `/history` (Riwayat) reuses the continue-watching source (in-progress only, limit 10) — it is NOT a full watch history (no completed items, no pagination, no clear-history action).
+- `/history` (Riwayat) reuses the continue-watching source (in-progress only, limit 10) — it is NOT a full watch history (no completed items, no pagination). It DOES support removing a single item (`DELETE /videos/{id}/watch`) and clearing all (`DELETE /videos/history`, registered before `/videos/:id` to avoid the :id param shadowing it).

@@ -127,6 +127,13 @@ router.get("/videos/continue-watching", requireAuth, async (req, res): Promise<v
   res.json(result);
 });
 
+// DELETE /videos/history  (clear entire watch history) — must precede /videos/:id
+router.delete("/videos/history", requireAuth, async (req, res): Promise<void> => {
+  const clerkId = (req as any).auth.userId;
+  await db.delete(watchProgressTable).where(eq(watchProgressTable.userClerkId, clerkId));
+  res.status(204).send();
+});
+
 // GET /videos/:id
 router.get("/videos/:id", async (req, res): Promise<void> => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
@@ -195,6 +202,16 @@ router.post("/videos/:id/watch", requireAuth, async (req, res): Promise<void> =>
       .returning();
     res.json({ videoId: created.videoId, progressSeconds: created.progressSeconds, progressPercent: created.progressPercent, completed: created.completed });
   }
+});
+
+// DELETE /videos/:id/watch  (remove a single video from history)
+router.delete("/videos/:id/watch", requireAuth, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  const clerkId = (req as any).auth.userId;
+  await db.delete(watchProgressTable)
+    .where(and(eq(watchProgressTable.videoId, id), eq(watchProgressTable.userClerkId, clerkId)));
+  res.status(204).send();
 });
 
 // POST /videos/:id/like

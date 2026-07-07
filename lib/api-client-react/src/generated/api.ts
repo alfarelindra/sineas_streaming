@@ -751,6 +751,146 @@ export const useDeleteVideo = <TError = ErrorType<unknown>,
       return useMutation(getDeleteVideoMutationOptions(options));
     }
 
+export const getClearWatchHistoryUrl = () => {
+
+
+
+
+  return `/api/videos/history`
+}
+
+/**
+ * @summary Clear the user's entire watch history
+ */
+export const clearWatchHistory = async ( options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getClearWatchHistoryUrl(),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getClearWatchHistoryMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clearWatchHistory>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof clearWatchHistory>>, TError,void, TContext> => {
+
+const mutationKey = ['clearWatchHistory'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof clearWatchHistory>>, void> = () => {
+
+
+          return  clearWatchHistory(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ClearWatchHistoryMutationResult = NonNullable<Awaited<ReturnType<typeof clearWatchHistory>>>
+
+    export type ClearWatchHistoryMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Clear the user's entire watch history
+ */
+export const useClearWatchHistory = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clearWatchHistory>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof clearWatchHistory>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getClearWatchHistoryMutationOptions(options));
+    }
+
+export const getRemoveWatchProgressUrl = (id: number,) => {
+
+
+
+
+  return `/api/videos/${id}/watch`
+}
+
+/**
+ * @summary Remove a single video from the user's watch history
+ */
+export const removeWatchProgress = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getRemoveWatchProgressUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getRemoveWatchProgressMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeWatchProgress>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof removeWatchProgress>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['removeWatchProgress'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeWatchProgress>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  removeWatchProgress(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RemoveWatchProgressMutationResult = NonNullable<Awaited<ReturnType<typeof removeWatchProgress>>>
+
+    export type RemoveWatchProgressMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Remove a single video from the user's watch history
+ */
+export const useRemoveWatchProgress = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeWatchProgress>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof removeWatchProgress>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getRemoveWatchProgressMutationOptions(options));
+    }
+
 export const getGetWatchProgressUrl = (id: number,) => {
 
 

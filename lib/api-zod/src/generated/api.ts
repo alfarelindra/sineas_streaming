@@ -232,6 +232,14 @@ export const DeleteVideoParams = zod.object({
 
 
 /**
+ * @summary Remove a single video from the user's watch history
+ */
+export const RemoveWatchProgressParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
  * @summary Get watch progress for a video
  */
 export const GetWatchProgressParams = zod.object({

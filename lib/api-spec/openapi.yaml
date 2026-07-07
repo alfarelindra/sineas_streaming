@@ -185,7 +185,28 @@ paths:
         "204":
           description: Deleted
 
+  /videos/history:
+    delete:
+      operationId: clearWatchHistory
+      tags: [videos]
+      summary: Clear the user's entire watch history
+      responses:
+        "204":
+          description: Cleared
+
   /videos/{id}/watch:
+    delete:
+      operationId: removeWatchProgress
+      tags: [videos]
+      summary: Remove a single video from the user's watch history
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Removed
     get:
       operationId: getWatchProgress
       tags: [videos]
