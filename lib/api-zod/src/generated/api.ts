@@ -273,10 +273,46 @@ export const GetWatchHistoryResponse = zod.object({
 
 
 /**
+ * @summary Clear the user's entire watch history
+ */
+export const ClearWatchHistoryResponse = zod.object({
+  "items": zod.array(zod.object({
+  "videoId": zod.number(),
+  "progressSeconds": zod.number(),
+  "progressPercent": zod.number(),
+  "completed": zod.boolean(),
+  "watchedAt": zod.coerce.date().describe('When the video was last watched (preserved on restore)')
+}))
+})
+
+
+/**
+ * @summary Restore previously removed watch-history rows (undo)
+ */
+export const RestoreWatchHistoryBody = zod.object({
+  "items": zod.array(zod.object({
+  "videoId": zod.number(),
+  "progressSeconds": zod.number(),
+  "progressPercent": zod.number(),
+  "completed": zod.boolean(),
+  "watchedAt": zod.coerce.date().describe('When the video was last watched (preserved on restore)')
+}))
+})
+
+
+/**
  * @summary Remove a single video from the user's watch history
  */
 export const RemoveWatchProgressParams = zod.object({
   "id": zod.coerce.number()
+})
+
+export const RemoveWatchProgressResponse = zod.object({
+  "videoId": zod.number(),
+  "progressSeconds": zod.number(),
+  "progressPercent": zod.number(),
+  "completed": zod.boolean(),
+  "watchedAt": zod.coerce.date().describe('When the video was last watched (preserved on restore)')
 })
 
 

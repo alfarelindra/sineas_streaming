@@ -209,8 +209,27 @@ paths:
       tags: [videos]
       summary: Clear the user's entire watch history
       responses:
+        "200":
+          description: Cleared; returns snapshots of the removed rows so the client can offer undo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WatchProgressSnapshotList"
+
+  /videos/history/restore:
+    post:
+      operationId: restoreWatchHistory
+      tags: [videos]
+      summary: Restore previously removed watch-history rows (undo)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WatchProgressSnapshotList"
+      responses:
         "204":
-          description: Cleared
+          description: Restored
 
   /videos/{id}/watch:
     delete:
@@ -223,8 +242,12 @@ paths:
           required: true
           schema: { type: integer }
       responses:
-        "204":
-          description: Removed
+        "200":
+          description: Removed; returns a snapshot of the removed row so the client can offer undo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WatchProgressSnapshot"
     get:
       operationId: getWatchProgress
       tags: [videos]
@@ -683,6 +706,25 @@ components:
       properties:
         progressSeconds: { type: integer }
         completed: { type: boolean }
+
+    WatchProgressSnapshot:
+      type: object
+      required: [videoId, progressSeconds, progressPercent, completed, watchedAt]
+      properties:
+        videoId: { type: integer }
+        progressSeconds: { type: integer }
+        progressPercent: { type: integer }
+        completed: { type: boolean }
+        watchedAt: { type: string, format: date-time, description: "When the video was last watched (preserved on restore)" }
+
+    WatchProgressSnapshotList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/WatchProgressSnapshot"
 
     LikeStatus:
       type: object

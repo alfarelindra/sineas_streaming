@@ -47,6 +47,8 @@ import type {
   WatchHistoryList,
   WatchProgress,
   WatchProgressInput,
+  WatchProgressSnapshot,
+  WatchProgressSnapshotList,
   WatchlistInput,
   WatchlistItem
 } from './api.schemas';
@@ -848,9 +850,9 @@ export const getClearWatchHistoryUrl = () => {
 /**
  * @summary Clear the user's entire watch history
  */
-export const clearWatchHistory = async ( options?: RequestInit): Promise<void> => {
+export const clearWatchHistory = async ( options?: RequestInit): Promise<WatchProgressSnapshotList> => {
 
-  return customFetch<void>(getClearWatchHistoryUrl(),
+  return customFetch<WatchProgressSnapshotList>(getClearWatchHistoryUrl(),
   {
     ...options,
     method: 'DELETE'
@@ -907,6 +909,77 @@ export const useClearWatchHistory = <TError = ErrorType<unknown>,
       return useMutation(getClearWatchHistoryMutationOptions(options));
     }
 
+export const getRestoreWatchHistoryUrl = () => {
+
+
+
+
+  return `/api/videos/history/restore`
+}
+
+/**
+ * @summary Restore previously removed watch-history rows (undo)
+ */
+export const restoreWatchHistory = async (watchProgressSnapshotList: WatchProgressSnapshotList, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getRestoreWatchHistoryUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      watchProgressSnapshotList,)
+  }
+);}
+
+
+
+
+export const getRestoreWatchHistoryMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof restoreWatchHistory>>, TError,{data: BodyType<WatchProgressSnapshotList>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof restoreWatchHistory>>, TError,{data: BodyType<WatchProgressSnapshotList>}, TContext> => {
+
+const mutationKey = ['restoreWatchHistory'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof restoreWatchHistory>>, {data: BodyType<WatchProgressSnapshotList>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  restoreWatchHistory(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RestoreWatchHistoryMutationResult = NonNullable<Awaited<ReturnType<typeof restoreWatchHistory>>>
+    export type RestoreWatchHistoryMutationBody = BodyType<WatchProgressSnapshotList>
+    export type RestoreWatchHistoryMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Restore previously removed watch-history rows (undo)
+ */
+export const useRestoreWatchHistory = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof restoreWatchHistory>>, TError,{data: BodyType<WatchProgressSnapshotList>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof restoreWatchHistory>>,
+        TError,
+        {data: BodyType<WatchProgressSnapshotList>},
+        TContext
+      > => {
+      return useMutation(getRestoreWatchHistoryMutationOptions(options));
+    }
+
 export const getRemoveWatchProgressUrl = (id: number,) => {
 
 
@@ -918,9 +991,9 @@ export const getRemoveWatchProgressUrl = (id: number,) => {
 /**
  * @summary Remove a single video from the user's watch history
  */
-export const removeWatchProgress = async (id: number, options?: RequestInit): Promise<void> => {
+export const removeWatchProgress = async (id: number, options?: RequestInit): Promise<WatchProgressSnapshot> => {
 
-  return customFetch<void>(getRemoveWatchProgressUrl(id),
+  return customFetch<WatchProgressSnapshot>(getRemoveWatchProgressUrl(id),
   {
     ...options,
     method: 'DELETE'

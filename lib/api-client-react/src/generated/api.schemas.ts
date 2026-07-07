@@ -104,6 +104,19 @@ export interface WatchProgressInput {
   completed?: boolean;
 }
 
+export interface WatchProgressSnapshot {
+  videoId: number;
+  progressSeconds: number;
+  progressPercent: number;
+  completed: boolean;
+  /** When the video was last watched (preserved on restore) */
+  watchedAt: string;
+}
+
+export interface WatchProgressSnapshotList {
+  items: WatchProgressSnapshot[];
+}
+
 export interface LikeStatus {
   liked: boolean;
   likeCount: number;

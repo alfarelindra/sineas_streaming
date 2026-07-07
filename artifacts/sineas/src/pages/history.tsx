@@ -2,7 +2,10 @@ import {
   useGetWatchHistory,
   useRemoveWatchProgress,
   useClearWatchHistory,
+  useRestoreWatchHistory,
 } from "@workspace/api-client-react";
+import type { WatchProgressSnapshot } from "@workspace/api-client-react";
+import { ToastAction } from "@/components/ui/toast";
 import Navbar from "@/components/Navbar";
 import VideoCard from "@/components/VideoCard";
 import { useAuth } from "@clerk/react";
@@ -58,6 +61,7 @@ export default function HistoryPage() {
   );
   const removeWatchProgress = useRemoveWatchProgress();
   const clearWatchHistory = useClearWatchHistory();
+  const restoreWatchHistory = useRestoreWatchHistory();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [removing, setRemoving] = useState<Set<number>>(new Set());
@@ -69,14 +73,37 @@ export default function HistoryPage() {
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: ["/api/videos/history"] });
 
+  const handleUndo = (snapshots: WatchProgressSnapshot[]) => {
+    restoreWatchHistory.mutate(
+      { data: { items: snapshots } },
+      {
+        onSuccess: () => {
+          invalidate();
+          toast({ title: "Riwayat dipulihkan" });
+        },
+        onError: () => {
+          toast({ title: "Gagal memulihkan riwayat", variant: "destructive" });
+        },
+      }
+    );
+  };
+
   const handleRemove = (videoId: number, title: string) => {
     setRemoving((s) => new Set(s).add(videoId));
     removeWatchProgress.mutate(
       { id: videoId },
       {
-        onSuccess: () => {
+        onSuccess: (snapshot) => {
           invalidate();
-          toast({ title: `"${title}" dihapus dari riwayat` });
+          toast({
+            title: `"${title}" dihapus dari riwayat`,
+            duration: 6000,
+            action: (
+              <ToastAction altText="Urungkan penghapusan" onClick={() => handleUndo([snapshot])}>
+                Urungkan
+              </ToastAction>
+            ),
+          });
         },
         onError: () => {
           toast({ title: "Gagal menghapus", variant: "destructive" });
@@ -94,10 +121,20 @@ export default function HistoryPage() {
 
   const handleClearAll = () => {
     clearWatchHistory.mutate(undefined, {
-      onSuccess: () => {
+      onSuccess: (result) => {
         setPage(1);
         invalidate();
-        toast({ title: "Riwayat tontonan dikosongkan" });
+        const snapshots = result?.items ?? [];
+        toast({
+          title: "Riwayat tontonan dikosongkan",
+          duration: 6000,
+          action:
+            snapshots.length > 0 ? (
+              <ToastAction altText="Urungkan pengosongan riwayat" onClick={() => handleUndo(snapshots)}>
+                Urungkan
+              </ToastAction>
+            ) : undefined,
+        });
       },
       onError: () => {
         toast({ title: "Gagal mengosongkan riwayat", variant: "destructive" });

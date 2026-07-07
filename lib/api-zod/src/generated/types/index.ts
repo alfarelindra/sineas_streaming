@@ -37,3 +37,5 @@ export * from './watchlistInput';
 export * from './watchlistItem';
 export * from './watchProgress';
 export * from './watchProgressInput';
+export * from './watchProgressSnapshot';
+export * from './watchProgressSnapshotList';

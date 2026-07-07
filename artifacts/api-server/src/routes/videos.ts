@@ -13,6 +13,7 @@ import {
   CreateVideoBody,
   UpdateVideoBody,
   UpdateWatchProgressBody,
+  RestoreWatchHistoryBody,
   CreateCommentBody,
   ListVideosQueryParams,
 } from "@workspace/api-zod";
@@ -163,9 +164,42 @@ router.get("/videos/history", requireAuth, async (req, res): Promise<void> => {
 });
 
 // DELETE /videos/history  (clear entire watch history) — must precede /videos/:id
+// Returns snapshots of the removed rows so the client can offer an undo.
 router.delete("/videos/history", requireAuth, async (req, res): Promise<void> => {
   const clerkId = (req as any).auth.userId;
-  await db.delete(watchProgressTable).where(eq(watchProgressTable.userClerkId, clerkId));
+  const removed = await db.delete(watchProgressTable)
+    .where(eq(watchProgressTable.userClerkId, clerkId))
+    .returning();
+  res.json({
+    items: removed.map(r => ({
+      videoId: r.videoId,
+      progressSeconds: r.progressSeconds,
+      progressPercent: r.progressPercent,
+      completed: r.completed,
+      watchedAt: r.updatedAt.toISOString(),
+    })),
+  });
+});
+
+// POST /videos/history/restore  (undo a removal) — must precede /videos/:id
+router.post("/videos/history/restore", requireAuth, async (req, res): Promise<void> => {
+  const clerkId = (req as any).auth.userId;
+  const parsed = RestoreWatchHistoryBody.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
+
+  const items = parsed.data.items;
+  if (items.length) {
+    await db.insert(watchProgressTable)
+      .values(items.map(item => ({
+        userClerkId: clerkId,
+        videoId: item.videoId,
+        progressSeconds: item.progressSeconds,
+        progressPercent: item.progressPercent,
+        completed: item.completed,
+        updatedAt: new Date(item.watchedAt),
+      })))
+      .onConflictDoNothing();
+  }
   res.status(204).send();
 });
 
@@ -240,13 +274,22 @@ router.post("/videos/:id/watch", requireAuth, async (req, res): Promise<void> =>
 });
 
 // DELETE /videos/:id/watch  (remove a single video from history)
+// Returns a snapshot of the removed row so the client can offer an undo.
 router.delete("/videos/:id/watch", requireAuth, async (req, res): Promise<void> => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
   const clerkId = (req as any).auth.userId;
-  await db.delete(watchProgressTable)
-    .where(and(eq(watchProgressTable.videoId, id), eq(watchProgressTable.userClerkId, clerkId)));
-  res.status(204).send();
+  const [removed] = await db.delete(watchProgressTable)
+    .where(and(eq(watchProgressTable.videoId, id), eq(watchProgressTable.userClerkId, clerkId)))
+    .returning();
+  if (!removed) { res.status(404).json({ error: "Not found" }); return; }
+  res.json({
+    videoId: removed.videoId,
+    progressSeconds: removed.progressSeconds,
+    progressPercent: removed.progressPercent,
+    completed: removed.completed,
+    watchedAt: removed.updatedAt.toISOString(),
+  });
 });
 
 // POST /videos/:id/like
