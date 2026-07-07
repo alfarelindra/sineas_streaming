@@ -239,7 +239,8 @@ export const getWatchHistoryQueryLimitDefault = 24;
 
 export const GetWatchHistoryQueryParams = zod.object({
   "page": zod.coerce.number().default(getWatchHistoryQueryPageDefault),
-  "limit": zod.coerce.number().default(getWatchHistoryQueryLimitDefault)
+  "limit": zod.coerce.number().default(getWatchHistoryQueryLimitDefault),
+  "completed": zod.coerce.boolean().optional().describe('Filter by completion status. Omit for all, true for finished, false for still watching.')
 })
 
 export const GetWatchHistoryResponse = zod.object({

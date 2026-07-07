@@ -135,13 +135,25 @@ router.get("/videos/history", requireAuth, async (req, res): Promise<void> => {
   const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit ?? 24), 10) || 24));
   const offset = (page - 1) * limit;
 
+  const completedRaw = req.query.completed;
+  let completedFilter: boolean | undefined;
+  if (completedRaw === "true") completedFilter = true;
+  else if (completedRaw === "false") completedFilter = false;
+
+  const whereClause = completedFilter === undefined
+    ? eq(watchProgressTable.userClerkId, clerkId)
+    : and(
+        eq(watchProgressTable.userClerkId, clerkId),
+        eq(watchProgressTable.completed, completedFilter),
+      );
+
   const [progresses, countResult] = await Promise.all([
     db.select().from(watchProgressTable)
-      .where(eq(watchProgressTable.userClerkId, clerkId))
+      .where(whereClause)
       .orderBy(desc(watchProgressTable.updatedAt))
       .limit(limit).offset(offset),
     db.select({ count: sql<number>`count(*)` }).from(watchProgressTable)
-      .where(eq(watchProgressTable.userClerkId, clerkId)),
+      .where(whereClause),
   ]);
 
   const videoIds = progresses.map(p => p.videoId);

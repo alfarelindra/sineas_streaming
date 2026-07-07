@@ -9,4 +9,8 @@
 export type GetWatchHistoryParams = {
 page?: number;
 limit?: number;
+/**
+ * Filter by completion status. Omit for all, true for finished, false for still watching.
+ */
+completed?: boolean;
 };

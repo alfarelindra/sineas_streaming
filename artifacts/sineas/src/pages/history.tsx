@@ -49,11 +49,22 @@ function formatWatchedAt(iso: string): string {
   });
 }
 
+type FilterValue = "all" | "in-progress" | "completed";
+
+const FILTERS: { value: FilterValue; label: string }[] = [
+  { value: "all", label: "Semua" },
+  { value: "in-progress", label: "Sedang ditonton" },
+  { value: "completed", label: "Selesai" },
+];
+
 export default function HistoryPage() {
   const { isSignedIn } = useAuth();
   const [page, setPage] = useState(1);
+  const [filter, setFilter] = useState<FilterValue>("all");
+  const completedParam =
+    filter === "completed" ? true : filter === "in-progress" ? false : undefined;
   const { data, isLoading } = useGetWatchHistory(
-    { page, limit: PAGE_SIZE },
+    { page, limit: PAGE_SIZE, ...(completedParam !== undefined ? { completed: completedParam } : {}) },
     {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       query: { enabled: !!isSignedIn } as any,
@@ -117,6 +128,11 @@ export default function HistoryPage() {
         },
       }
     );
+  };
+
+  const handleFilterChange = (value: FilterValue) => {
+    setFilter(value);
+    setPage(1);
   };
 
   const handleClearAll = () => {
@@ -213,6 +229,23 @@ export default function HistoryPage() {
           )}
         </div>
 
+        {/* Filter */}
+        <div className="flex flex-wrap items-center gap-2 mb-8">
+          {FILTERS.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => handleFilterChange(f.value)}
+              className={
+                filter === f.value
+                  ? "px-4 py-1.5 rounded-full text-sm font-semibold bg-blue-600 text-white transition-colors"
+                  : "px-4 py-1.5 rounded-full text-sm font-medium bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              }
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
         {/* Loading */}
         {isLoading && (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
@@ -231,15 +264,35 @@ export default function HistoryPage() {
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted mb-6">
               <History className="w-10 h-10 text-muted-foreground" />
             </div>
-            <h2 className="text-xl font-bold mb-2">Belum ada riwayat tontonan</h2>
+            <h2 className="text-xl font-bold mb-2">
+              {filter === "completed"
+                ? "Belum ada video yang selesai ditonton"
+                : filter === "in-progress"
+                  ? "Tidak ada video yang sedang ditonton"
+                  : "Belum ada riwayat tontonan"}
+            </h2>
             <p className="text-muted-foreground text-sm mb-6 max-w-xs mx-auto">
-              Mulai tonton video dan semua yang kamu tonton akan muncul di sini.
+              {filter === "completed"
+                ? "Video yang sudah kamu tonton sampai selesai akan muncul di sini."
+                : filter === "in-progress"
+                  ? "Video yang belum selesai kamu tonton akan muncul di sini."
+                  : "Mulai tonton video dan semua yang kamu tonton akan muncul di sini."}
             </p>
-            <Link href="/browse">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
-                <Play className="w-4 h-4" /> Jelajahi Video
+            {filter === "all" ? (
+              <Link href="/browse">
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
+                  <Play className="w-4 h-4" /> Jelajahi Video
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                onClick={() => handleFilterChange("all")}
+                variant="outline"
+                className="border-border"
+              >
+                Lihat semua riwayat
               </Button>
-            </Link>
+            )}
           </div>
         )}
 

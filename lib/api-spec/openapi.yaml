@@ -197,6 +197,10 @@ paths:
         - name: limit
           in: query
           schema: { type: integer, default: 24 }
+        - name: completed
+          in: query
+          description: Filter by completion status. Omit for all, true for finished, false for still watching.
+          schema: { type: boolean }
       responses:
         "200":
           description: Watch history ordered by last watched
