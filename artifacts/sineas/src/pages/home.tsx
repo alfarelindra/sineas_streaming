@@ -1,16 +1,90 @@
-import { useListVideos, useGetTrendingVideos, useGetFeaturedVideos, useGetContinueWatching } from "@workspace/api-client-react";
+import {
+  useListVideos,
+  useGetTrendingVideos,
+  useGetFeaturedVideos,
+  useGetContinueWatching,
+  useRemoveWatchProgress,
+  useRestoreWatchHistory,
+} from "@workspace/api-client-react";
+import type { WatchProgressSnapshot } from "@workspace/api-client-react";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import VideoRow from "@/components/VideoRow";
 import Logo from "@/components/Logo";
+import { ToastAction } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@clerk/react";
-import { Play, Clock } from "lucide-react";
+import { Play, Clock, X } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Home() {
   const [, setLocation] = useLocation();
   const { isSignedIn } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const removeWatchProgress = useRemoveWatchProgress();
+  const restoreWatchHistory = useRestoreWatchHistory();
+  const [removing, setRemoving] = useState<Set<number>>(new Set());
+
+  const invalidateProgress = () => {
+    queryClient.invalidateQueries({ queryKey: ["/api/videos/continue-watching"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/videos/history"] });
+  };
+
+  const handleUndo = (snapshots: WatchProgressSnapshot[]) => {
+    restoreWatchHistory.mutate(
+      { data: { items: snapshots } },
+      {
+        onSuccess: () => {
+          invalidateProgress();
+          toast({ title: "Riwayat dipulihkan" });
+        },
+        onError: () => {
+          toast({ title: "Gagal memulihkan riwayat", variant: "destructive" });
+        },
+      }
+    );
+  };
+
+  const handleRemoveContinue = (
+    e: React.MouseEvent,
+    videoId: number,
+    title: string
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setRemoving((s) => new Set(s).add(videoId));
+    removeWatchProgress.mutate(
+      { id: videoId },
+      {
+        onSuccess: (snapshot) => {
+          invalidateProgress();
+          toast({
+            title: `"${title}" dihapus dari Lanjutkan Menonton`,
+            duration: 6000,
+            action: (
+              <ToastAction altText="Urungkan penghapusan" onClick={() => handleUndo([snapshot])}>
+                Urungkan
+              </ToastAction>
+            ),
+          });
+        },
+        onError: () => {
+          toast({ title: "Gagal menghapus", variant: "destructive" });
+        },
+        onSettled: () => {
+          setRemoving((s) => {
+            const next = new Set(s);
+            next.delete(videoId);
+            return next;
+          });
+        },
+      }
+    );
+  };
 
   const { data: featured, isLoading: loadingFeatured } = useGetFeaturedVideos();
   const { data: trending, isLoading: loadingTrending } = useGetTrendingVideos({ limit: 12 });
@@ -63,6 +137,15 @@ export default function Home() {
                         <Play className="w-5 h-5 text-white fill-white" />
                       </div>
                     </div>
+                    {/* Remove button — appears on hover */}
+                    <button
+                      onClick={(e) => handleRemoveContinue(e, v.id, v.title)}
+                      disabled={removing.has(v.id)}
+                      title="Hapus dari Lanjutkan Menonton"
+                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-200 bg-black/70 hover:bg-red-600 backdrop-blur-sm rounded-full p-1.5 text-white disabled:opacity-50 disabled:cursor-not-allowed z-10"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
                     {/* Progress bar */}
                     <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
                       <div
