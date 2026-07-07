@@ -16,6 +16,11 @@ Brand = **royal blue + vivid yellow** on a **midnight-navy** background (from us
 
 **Why:** matches the attached brand assets and keeps text contrast accessible in dark mode.
 
-## Known gaps (not brand-specific)
-- **Light mode is not fully theme-tokenized.** Many pages hardcode `bg-[#0a0f1e] text-white`; `index.css` only overrides the *background* for `.min-h-screen.bg-[#0a0f1e]` in `html.light`, so `text-white` children can be unreadable on the near-white light bg. Fixing properly means moving pages to `bg-background`/`text-foreground` tokens. Pre-existing, not caused by the rebrand.
-- No `/history` page/route exists yet (App.tsx) despite being referenced in product discussions.
+## Light/dark theming (critical)
+- **The `dark:` Tailwind variant is INERT.** `index.css` defines `@custom-variant dark (&:is(.dark *))` but no `.dark` class is ever added. Dark is the DEFAULT via `:root`; Light Mode is opt-in via `html.light`. So `dark:text-white` never applies, and `text-slate-900 dark:text-white` renders dark text in BOTH modes. **Never use `dark:` here** — use semantic tokens (`bg-background`, `text-foreground`, `text-muted-foreground`, `bg-card`, `bg-muted`, `border-border`) which flip automatically, and add overrides under `html.light` in `index.css` if needed.
+- **Legit `text-white` exceptions:** white on solid blue/black/colored surfaces (buttons, badges) and overlay play icons over images are correct in both themes — don't tokenize those.
+- **Navbar contrast pattern:** the navbar overlays a dark gradient at top but goes light when scrolled in light mode. Compute `overDark = !scrolled || theme === "dark"` and pick control colors from it (light controls when overDark, dark controls otherwise). `NotificationBell` takes an `overDark` prop for the same reason.
+
+## Known gaps
+- **Light mode tokenized only on priority surfaces** (home, browse, history, watchlist + shared VideoCard/VideoRow/Navbar). Secondary pages (watch, upload, subscription, profile, dashboard, search, creator, not-found, App.tsx auth wrappers, NotificationBell dropdown panel) still hardcode dark styles and are unreadable in Light Mode.
+- `/history` (Riwayat) reuses the continue-watching source (in-progress only, limit 10) — it is NOT a full watch history (no completed items, no pagination, no clear-history action).

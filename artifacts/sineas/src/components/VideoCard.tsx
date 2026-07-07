@@ -99,16 +99,16 @@ export default function VideoCard({ video, variant = "default" }: VideoCardProps
 
       <div className="mt-2 px-0.5">
         <Link href={`/watch/${video.id}`}>
-          <h3 className="text-sm font-semibold text-white line-clamp-2 group-hover:text-yellow-400 transition-colors">
+          <h3 className="text-sm font-semibold text-foreground line-clamp-2 group-hover:text-yellow-400 transition-colors">
             {video.title}
           </h3>
         </Link>
-        <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+        <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
           {video.uploaderName && (
             video.uploaderId ? (
               <Link
                 href={`/creator/${encodeURIComponent(video.uploaderId)}`}
-                className="truncate hover:text-white transition-colors"
+                className="truncate hover:text-foreground transition-colors"
                 onClick={(e) => e.stopPropagation()}
               >
                 {video.uploaderName}
@@ -125,7 +125,7 @@ export default function VideoCard({ video, variant = "default" }: VideoCardProps
           )}
         </div>
         {video.genre && (
-          <Badge variant="outline" className="mt-1 text-xs text-gray-500 border-gray-700 px-1.5 py-0">
+          <Badge variant="outline" className="mt-1 text-xs text-muted-foreground border-border px-1.5 py-0">
             {video.genre}
           </Badge>
         )}

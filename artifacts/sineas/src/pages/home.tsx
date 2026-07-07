@@ -29,7 +29,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar onSearch={handleSearch} />
 
       {/* Hero */}
@@ -43,7 +43,7 @@ export default function Home() {
         {/* Continue Watching */}
         {isSignedIn && (continueWatching ?? []).length > 0 && (
           <div className="mb-10">
-            <h2 className="text-lg sm:text-xl font-bold text-white mb-3 px-6 sm:px-10 flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 px-6 sm:px-10 flex items-center gap-2">
               <Clock className="w-5 h-5 text-yellow-400" />
               Lanjutkan Menonton
             </h2>
@@ -71,8 +71,8 @@ export default function Home() {
                       />
                     </div>
                   </div>
-                  <p className="text-sm font-semibold text-white mt-2 line-clamp-1 group-hover:text-yellow-400 transition-colors">{v.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{v.progressPercent ? `${Math.round(v.progressPercent)}% selesai` : "Mulai dari awal"}</p>
+                  <p className="text-sm font-semibold text-foreground mt-2 line-clamp-1 group-hover:text-yellow-400 transition-colors">{v.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{v.progressPercent ? `${Math.round(v.progressPercent)}% selesai` : "Mulai dari awal"}</p>
                 </Link>
               ))}
             </div>
@@ -91,9 +91,9 @@ export default function Home() {
         )}
       </div>
 
-      <footer className="border-t border-white/10 py-10 px-10 flex flex-col items-center gap-3 text-center">
+      <footer className="border-t border-border py-10 px-10 flex flex-col items-center gap-3 text-center">
         <Logo href="/" size="sm" />
-        <p className="text-xs text-gray-500">© 2025 Sineas. Platform streaming video Indonesia terbaik.</p>
+        <p className="text-xs text-muted-foreground">© 2025 Sineas. Platform streaming video Indonesia terbaik.</p>
       </footer>
     </div>
   );

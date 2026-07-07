@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useAuth, UserButton } from "@clerk/react";
-import { Search, Upload, Menu, X, Sun, Moon, LayoutDashboard, Bookmark } from "lucide-react";
+import { Search, Upload, Menu, X, Sun, Moon, LayoutDashboard, Bookmark, History } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +56,13 @@ export default function Navbar({ onSearch }: NavbarProps) {
       : "bg-white/95 backdrop-blur-md shadow-lg"
     : "bg-gradient-to-b from-black/80 to-transparent";
 
+  // When the navbar sits over a dark surface (top gradient or dark theme), use light
+  // controls. Only a scrolled navbar in light mode needs dark controls.
+  const overDark = !scrolled || theme === "dark";
+  const iconCls = overDark ? "text-gray-300 hover:text-white" : "text-gray-600 hover:text-gray-900";
+  const linkActive = overDark ? "text-white" : "text-gray-900";
+  const linkIdle = overDark ? "text-gray-400 hover:text-white" : "text-gray-600 hover:text-gray-900";
+
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${bg}`}>
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -68,9 +75,7 @@ export default function Navbar({ onSearch }: NavbarProps) {
                 key={l.href}
                 href={l.href}
                 className={`text-sm font-medium transition-colors ${
-                  location === l.href
-                    ? theme === "light" && scrolled ? "text-gray-900" : "text-white"
-                    : "text-gray-400 hover:text-white"
+                  location === l.href ? linkActive : linkIdle
                 }`}
               >
                 {l.label}
@@ -94,39 +99,45 @@ export default function Navbar({ onSearch }: NavbarProps) {
                   placeholder="Cari film, serial..."
                   className="w-48 sm:w-64 bg-black/60 border-white/30 text-white placeholder:text-gray-500 h-8 text-sm"
                 />
-                <button type="button" onClick={() => setSearchOpen(false)} className="text-gray-400 hover:text-white">
+                <button type="button" onClick={() => setSearchOpen(false)} className={iconCls}>
                   <X className="w-4 h-4" />
                 </button>
               </form>
             ) : (
-              <button onClick={() => setSearchOpen(true)} className="text-gray-300 hover:text-white p-2">
+              <button onClick={() => setSearchOpen(true)} className={`${iconCls} p-2`}>
                 <Search className="w-5 h-5" />
               </button>
             )}
 
             {/* Theme toggle */}
-            <button onClick={toggle} className="text-gray-300 hover:text-white p-2 transition-colors" title="Ganti tema">
+            <button onClick={toggle} className={`${iconCls} p-2 transition-colors`} title="Ganti tema">
               {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
 
             {/* Notifications */}
-            <NotificationBell />
+            <NotificationBell overDark={overDark} />
 
             <SignedIn>
               <Link href="/watchlist" className="hidden sm:block" title="Daftar Tonton">
-                <Button size="sm" variant="ghost" className={`gap-1 ${location === "/watchlist" ? "text-white" : "text-gray-300 hover:text-white"}`}>
-                  <Bookmark className={`w-4 h-4 ${location === "/watchlist" ? "fill-white" : ""}`} />
+                <Button size="sm" variant="ghost" className={`gap-1 ${location === "/watchlist" ? linkActive : iconCls}`}>
+                  <Bookmark className={`w-4 h-4 ${location === "/watchlist" ? "fill-current" : ""}`} />
                   <span className="text-xs">Disimpan</span>
                 </Button>
               </Link>
+              <Link href="/history" className="hidden sm:block" title="Riwayat Tontonan">
+                <Button size="sm" variant="ghost" className={`gap-1 ${location === "/history" ? linkActive : iconCls}`}>
+                  <History className="w-4 h-4" />
+                  <span className="text-xs">Riwayat</span>
+                </Button>
+              </Link>
               <Link href="/dashboard" className="hidden sm:block">
-                <Button size="sm" variant="ghost" className="text-gray-300 hover:text-white gap-1">
+                <Button size="sm" variant="ghost" className={`${iconCls} gap-1`}>
                   <LayoutDashboard className="w-4 h-4" />
                   <span className="text-xs">Dashboard</span>
                 </Button>
               </Link>
               <Link href="/upload">
-                <Button size="sm" variant="ghost" className="text-gray-300 hover:text-white hidden sm:flex gap-1">
+                <Button size="sm" variant="ghost" className={`${iconCls} hidden sm:flex gap-1`}>
                   <Upload className="w-4 h-4" />
                   <span className="text-xs">Upload</span>
                 </Button>
@@ -143,7 +154,7 @@ export default function Navbar({ onSearch }: NavbarProps) {
             </SignedOut>
 
             <button
-              className="md:hidden text-gray-300 hover:text-white p-2"
+              className={`md:hidden ${iconCls} p-2`}
               onClick={() => setMenuOpen(!menuOpen)}
             >
               {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -160,6 +171,7 @@ export default function Navbar({ onSearch }: NavbarProps) {
             ))}
             <SignedIn>
               <Link href="/watchlist" className="block px-4 py-2 text-sm text-gray-300 hover:text-white" onClick={() => setMenuOpen(false)}>Daftar Tonton</Link>
+              <Link href="/history" className="block px-4 py-2 text-sm text-gray-300 hover:text-white" onClick={() => setMenuOpen(false)}>Riwayat Tontonan</Link>
               <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-300 hover:text-white" onClick={() => setMenuOpen(false)}>Dashboard</Link>
               <Link href="/upload" className="block px-4 py-2 text-sm text-gray-300 hover:text-white" onClick={() => setMenuOpen(false)}>Upload Video</Link>
             </SignedIn>

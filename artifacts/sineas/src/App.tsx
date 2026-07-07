@@ -15,6 +15,7 @@ import Dashboard from "@/pages/dashboard";
 import SearchPage from "@/pages/search";
 import CreatorPage from "@/pages/creator";
 import WatchlistPage from "@/pages/watchlist";
+import HistoryPage from "@/pages/history";
 import { useEffect } from "react";
 import { setAuthTokenGetter } from "@workspace/api-client-react";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -75,6 +76,7 @@ function Router() {
       <Route path="/search" component={SearchPage} />
       <Route path="/creator/:id" component={CreatorPage} />
       <Route path="/watchlist" component={WatchlistPage} />
+      <Route path="/history" component={HistoryPage} />
       <Route path="/sign-in/*?" component={SignInPage} />
       <Route path="/sign-up/*?" component={SignUpPage} />
       <Route component={NotFound} />

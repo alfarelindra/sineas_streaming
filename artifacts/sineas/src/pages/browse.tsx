@@ -43,7 +43,7 @@ export default function Browse() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar onSearch={handleSearch} />
       <div className="pt-24 max-w-screen-2xl mx-auto px-6 sm:px-10 pb-16">
         <h1 className="text-3xl font-black mb-6">Jelajahi</h1>
@@ -51,7 +51,7 @@ export default function Browse() {
         {/* Filters */}
         <div className="flex flex-wrap gap-3 mb-8">
           <div className="relative flex-1 min-w-[200px] max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => {
@@ -60,14 +60,14 @@ export default function Browse() {
               }}
               onKeyDown={(e) => e.key === "Enter" && handleSearch(search)}
               placeholder="Cari judul, kreator..."
-              className="pl-9 bg-gray-900 border-gray-700 text-white placeholder:text-gray-500"
+              className="pl-9 bg-card border-border text-foreground placeholder:text-muted-foreground"
             />
           </div>
 
           <div className="flex flex-wrap gap-2 items-center">
             <Badge
               variant={!genre ? "default" : "outline"}
-              className={`cursor-pointer text-sm px-3 py-1.5 ${!genre ? "bg-blue-600 hover:bg-blue-700 border-0" : "border-gray-700 text-gray-400 hover:text-white hover:border-gray-500"}`}
+              className={`cursor-pointer text-sm px-3 py-1.5 ${!genre ? "bg-blue-600 hover:bg-blue-700 text-white border-0" : "border-border text-muted-foreground hover:text-foreground"}`}
               onClick={() => { setGenre(""); setPage(1); }}
             >
               Semua
@@ -76,7 +76,7 @@ export default function Browse() {
               <Badge
                 key={g.slug}
                 variant={genre === g.name ? "default" : "outline"}
-                className={`cursor-pointer text-sm px-3 py-1.5 ${genre === g.name ? "bg-blue-600 hover:bg-blue-700 border-0" : "border-gray-700 text-gray-400 hover:text-white hover:border-gray-500"}`}
+                className={`cursor-pointer text-sm px-3 py-1.5 ${genre === g.name ? "bg-blue-600 hover:bg-blue-700 text-white border-0" : "border-border text-muted-foreground hover:text-foreground"}`}
                 onClick={() => { setGenre(genre === g.name ? "" : g.name); setPage(1); }}
               >
                 {g.name}
@@ -91,13 +91,13 @@ export default function Browse() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {Array.from({ length: 12 }).map((_, i) => (
               <div key={i}>
-                <div className="aspect-video bg-gray-800 rounded-lg animate-pulse" />
-                <div className="mt-2 h-4 bg-gray-800 rounded animate-pulse" />
+                <div className="aspect-video bg-muted rounded-lg animate-pulse" />
+                <div className="mt-2 h-4 bg-muted rounded animate-pulse" />
               </div>
             ))}
           </div>
         ) : (data?.videos?.length ?? 0) === 0 ? (
-          <div className="text-center py-24 text-gray-500">
+          <div className="text-center py-24 text-muted-foreground">
             <Search className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p className="text-lg">Tidak ada video ditemukan</p>
             <p className="text-sm mt-1">Coba kata kunci lain atau ubah filter</p>
@@ -105,7 +105,7 @@ export default function Browse() {
         ) : (
           <>
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm text-gray-400">{data?.total} video ditemukan</p>
+              <p className="text-sm text-muted-foreground">{data?.total} video ditemukan</p>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {data?.videos?.map((v: any) => (
@@ -123,7 +123,7 @@ export default function Browse() {
                     className={`w-9 h-9 rounded text-sm font-medium transition-colors ${
                       p === page
                         ? "bg-blue-600 text-white"
-                        : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
+                        : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
                     }`}
                   >
                     {p}

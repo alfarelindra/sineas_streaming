@@ -48,7 +48,7 @@ function formatTime(iso: string) {
   return `${Math.floor(hours / 24)} hari lalu`;
 }
 
-export default function NotificationBell() {
+export default function NotificationBell({ overDark = true }: { overDark?: boolean }) {
   const { isSignedIn } = useAuth();
   const [open, setOpen] = useState(false);
   const [notifs, setNotifs] = useState<Notification[]>([]);
@@ -84,7 +84,7 @@ export default function NotificationBell() {
     <div ref={ref} className="relative">
       <button
         onClick={() => { setOpen(!open); if (!open) refresh(); }}
-        className="relative text-gray-300 hover:text-white p-2 transition-colors"
+        className={`relative p-2 transition-colors ${overDark ? "text-gray-300 hover:text-white" : "text-gray-600 hover:text-gray-900"}`}
       >
         <Bell className="w-5 h-5" />
         {unread > 0 && (

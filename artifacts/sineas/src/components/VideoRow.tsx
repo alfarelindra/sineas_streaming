@@ -20,12 +20,12 @@ export default function VideoRow({ title, videos, loading }: VideoRowProps) {
   if (loading) {
     return (
       <div className="mb-10">
-        <div className="h-6 w-40 bg-gray-800 rounded mb-4 animate-pulse" />
+        <div className="h-6 w-40 bg-muted rounded mb-4 animate-pulse" />
         <div className="flex gap-3">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="flex-shrink-0 w-48 sm:w-56">
-              <div className="aspect-video bg-gray-800 rounded-lg animate-pulse" />
-              <div className="mt-2 h-4 bg-gray-800 rounded animate-pulse" />
+              <div className="aspect-video bg-muted rounded-lg animate-pulse" />
+              <div className="mt-2 h-4 bg-muted rounded animate-pulse" />
             </div>
           ))}
         </div>
@@ -37,7 +37,7 @@ export default function VideoRow({ title, videos, loading }: VideoRowProps) {
 
   return (
     <div className="mb-10 group/row">
-      <h2 className="text-lg sm:text-xl font-bold text-white mb-3 px-6 sm:px-10">{title}</h2>
+      <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 px-6 sm:px-10">{title}</h2>
       <div className="relative px-6 sm:px-10">
         {/* Left arrow */}
         <button

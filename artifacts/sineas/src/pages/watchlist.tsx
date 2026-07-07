@@ -4,7 +4,7 @@ import VideoCard from "@/components/VideoCard";
 import { useAuth } from "@clerk/react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Bookmark, Trash2, Search, Play } from "lucide-react";
+import { Bookmark, Trash2, Search, Play, Popcorn } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -54,16 +54,16 @@ export default function WatchlistPage() {
 
   if (!isSignedIn) {
     return (
-      <div className="min-h-screen bg-[#0a0f1e] text-white">
+      <div className="min-h-screen bg-background text-foreground">
         <Navbar />
         <div className="pt-36 text-center px-6">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-800 mb-6">
-            <Bookmark className="w-10 h-10 text-gray-600" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted mb-6">
+            <Bookmark className="w-10 h-10 text-muted-foreground" />
           </div>
           <h2 className="text-2xl font-bold mb-3">Masuk untuk melihat daftar tonton</h2>
-          <p className="text-gray-500 text-sm mb-6">Simpan video favoritmu dan lanjutkan kapan saja.</p>
+          <p className="text-muted-foreground text-sm mb-6">Simpan video favoritmu dan lanjutkan kapan saja.</p>
           <Link href="/sign-in">
-            <Button className="bg-blue-600 hover:bg-blue-700">Masuk Sekarang</Button>
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white">Masuk Sekarang</Button>
           </Link>
         </div>
       </div>
@@ -71,7 +71,7 @@ export default function WatchlistPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar />
 
       <div className="pt-24 max-w-screen-xl mx-auto px-6 sm:px-10 pb-16">
@@ -84,7 +84,7 @@ export default function WatchlistPage() {
             <div>
               <h1 className="text-2xl font-black">Daftar Tonton</h1>
               {!isLoading && (
-                <p className="text-sm text-gray-500 mt-0.5">
+                <p className="text-sm text-muted-foreground mt-0.5">
                   {videos.length} video tersimpan
                 </p>
               )}
@@ -93,12 +93,12 @@ export default function WatchlistPage() {
 
           {videos.length > 0 && (
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Cari di daftar tonton..."
-                className="w-full bg-gray-900 border border-gray-700 focus:border-yellow-400 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-gray-600 outline-none transition-colors"
+                className="w-full bg-card border border-border focus:border-yellow-400 rounded-xl pl-9 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors"
               />
             </div>
           )}
@@ -109,9 +109,9 @@ export default function WatchlistPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {Array.from({ length: 10 }).map((_, i) => (
               <div key={i}>
-                <div className="aspect-video bg-gray-800 rounded-xl animate-pulse" />
-                <div className="mt-2 h-4 bg-gray-800 rounded animate-pulse w-3/4" />
-                <div className="mt-1 h-3 bg-gray-800 rounded animate-pulse w-1/2" />
+                <div className="aspect-video bg-muted rounded-xl animate-pulse" />
+                <div className="mt-2 h-4 bg-muted rounded animate-pulse w-3/4" />
+                <div className="mt-1 h-3 bg-muted rounded animate-pulse w-1/2" />
               </div>
             ))}
           </div>
@@ -120,16 +120,16 @@ export default function WatchlistPage() {
         {/* Empty — no items at all */}
         {!isLoading && videos.length === 0 && (
           <div className="text-center py-28">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-800/60 mb-6">
-              <Bookmark className="w-10 h-10 text-gray-600" />
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-yellow-400/15 mb-6">
+              <Popcorn className="w-10 h-10 text-yellow-400" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">Daftar tontonmu masih kosong</h2>
-            <p className="text-gray-500 text-sm mb-6 max-w-xs mx-auto">
-              Temukan video yang kamu suka dan klik tombol <strong className="text-gray-300">Simpan</strong> untuk menambahkannya ke sini.
+            <h2 className="text-xl font-bold mb-2">Daftar tontonmu masih kosong</h2>
+            <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
+              Belum ada film yang disimpan. Yuk, jelajahi film favoritmu sekarang!
             </p>
             <Link href="/browse">
-              <Button className="bg-blue-600 hover:bg-blue-700 gap-2">
-                <Play className="w-4 h-4" /> Jelajahi Video
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
+                <Play className="w-4 h-4" /> Jelajahi Film
               </Button>
             </Link>
           </div>
@@ -137,7 +137,7 @@ export default function WatchlistPage() {
 
         {/* Empty — search no match */}
         {!isLoading && videos.length > 0 && filtered.length === 0 && (
-          <div className="text-center py-20 text-gray-500">
+          <div className="text-center py-20 text-muted-foreground">
             <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
             <p className="text-lg font-medium">Tidak ada hasil untuk "{search}"</p>
             <button onClick={() => setSearch("")} className="mt-3 text-sm text-yellow-400 hover:text-yellow-300">
