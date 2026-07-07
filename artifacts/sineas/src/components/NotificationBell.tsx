@@ -115,7 +115,7 @@ export default function NotificationBell({ overDark = true }: { overDark?: boole
               notifs.map(n => (
                 <div
                   key={n.id}
-                  className={`px-4 py-3 border-b border-white/5 hover:bg-white/5 transition-colors ${!n.read ? "bg-yellow-400/10" : ""}`}
+                  className={`px-4 py-3 border-b border-border hover:bg-accent transition-colors ${!n.read ? "bg-yellow-400/10" : ""}`}
                 >
                   {n.link ? (
                     <Link href={n.link} onClick={() => setOpen(false)}>

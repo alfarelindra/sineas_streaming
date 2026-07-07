@@ -86,7 +86,7 @@ export default function CreatorPage() {
 
         {/* Stats */}
         {!isLoading && creatorVideos.length > 0 && (
-          <div className="flex gap-6 sm:gap-10 mb-10 border-b border-white/10 pb-8">
+          <div className="flex gap-6 sm:gap-10 mb-10 border-b border-border pb-8">
             <div className="text-center">
               <div className="flex items-center gap-2 text-2xl font-black text-foreground">
                 <Film className="w-5 h-5 text-yellow-400" />
