@@ -17,7 +17,7 @@ import WatchlistPage from "@/pages/watchlist";
 import HistoryPage from "@/pages/history";
 import SettingsPage from "@/pages/settings";
 import { useEffect } from "react";
-import { setAuthTokenGetter } from "@workspace/api-client-react";
+import { setAuthTokenGetter, setBaseUrl } from "@workspace/api-client-react";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 const queryClient = new QueryClient({
@@ -32,6 +32,11 @@ const clerkPubKey = publishableKeyFromHost(
 );
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+const apiUrl = import.meta.env.VITE_API_URL;
+if (apiUrl) {
+  setBaseUrl(apiUrl);
+}
 
 function stripBase(path: string): string {
   return basePath && path.startsWith(basePath)
