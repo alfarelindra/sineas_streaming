@@ -37,8 +37,14 @@ function updateVercelEnvironment(apiUrl) {
     console.log("\nTriggering production redeployment on Vercel...");
     runCommand("vercel --prod --force --yes --non-interactive");
     console.log("\nRedeployment complete! Vercel is now building and deploying your changes.");
-    console.log("\nKeep this script running to keep the Ngrok tunnel active.");
-    console.log("Press Ctrl+C to close the tunnel and exit.");
+    console.log("\n=== TUNNEL IS ACTIVE ===");
+    console.log(`Ngrok URL: ${apiUrl}`);
+    console.log("The backend API is now accessible via this URL.");
+    console.log("Keep this window open to maintain the tunnel.");
+    console.log("Press Ctrl+C to stop the tunnel.\n");
+
+    // Keep the process alive so the Ngrok tunnel stays open
+    setInterval(() => {}, 30000);
   } catch (err) {
     console.error("\nError updating environment or redeploying to Vercel:");
     console.error(err.message);
