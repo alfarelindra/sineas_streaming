@@ -36,7 +36,34 @@ app.use(
 // Clerk proxy — before body parsers
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 
-app.use(cors({ credentials: true, origin: true }));
+app.use(
+  cors({
+    credentials: true,
+    origin: (origin, callback) => {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      // Dynamically accept localhost, Ngrok tunnels, and Vercel domains
+      const isAllowed =
+        origin.startsWith("http://localhost:") ||
+        origin.endsWith(".ngrok-free.app") ||
+        origin.endsWith(".vercel.app") ||
+        origin.includes("sineas-streaming");
+
+      if (isAllowed || process.env.NODE_ENV !== "production") {
+        callback(null, true);
+      } else {
+        callback(null, true); // Fallback to allow custom domains
+      }
+    },
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "ngrok-skip-browser-warning",
+    ],
+  })
+);
 
 // Stripe webhook must be before express.json()
 app.post(
