@@ -1,4 +1,4 @@
-const ngrok = require("ngrok");
+const ngrok = require("@ngrok/ngrok");
 const { execSync } = require("child_process");
 
 console.log("=== Sineas Environment Automation Pipeline ===");
@@ -48,11 +48,14 @@ function updateVercelEnvironment(apiUrl) {
   }
 }
 
+let listener = null;
+
 async function cleanupAndExit() {
   console.log("\nClosing Ngrok tunnel and exiting...");
   try {
-    await ngrok.disconnect();
-    await ngrok.kill();
+    if (listener) {
+      await listener.close();
+    }
   } catch (e) {}
   process.exit(0);
 }
@@ -65,15 +68,13 @@ process.on("SIGTERM", cleanupAndExit);
   try {
     const authtoken = "3GELiKkhzbpN5s7LJX12YRvy2Ue_7CoEdm5mLfatW6CtvPctA";
     
-    console.log("Configuring Ngrok authtoken...");
-    await ngrok.authtoken(authtoken);
-
     console.log("Connecting Ngrok tunnel on port 8080...");
-    const url = await ngrok.connect({
-      proto: "http",
+    listener = await ngrok.forward({
       addr: 8080,
+      authtoken: authtoken,
     });
 
+    const url = listener.url();
     console.log(`\nSuccess! Public Ngrok URL captured: ${url}`);
     updateVercelEnvironment(url);
   } catch (err) {
