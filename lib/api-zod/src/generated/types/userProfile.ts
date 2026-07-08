@@ -11,6 +11,8 @@ export interface UserProfile {
   clerkId: string;
   displayName: string;
   /** @nullable */
+  username?: string | null;
+  /** @nullable */
   bio?: string | null;
   /** @nullable */
   avatarUrl?: string | null;

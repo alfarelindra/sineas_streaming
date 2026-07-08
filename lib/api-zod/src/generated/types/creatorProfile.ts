@@ -16,4 +16,5 @@ export interface CreatorProfile {
   videoCount: number;
   totalViews: number;
   totalLikes: number;
+  followerCount: number;
 }

@@ -6,6 +6,8 @@ import genresRouter from "./genres";
 import subscriptionRouter from "./subscription";
 import statsRouter from "./stats";
 import storageRouter from "./storage";
+import notificationsRouter from "./notifications";
+import midtransRouter from "./midtrans";
 
 const router: IRouter = Router();
 
@@ -16,5 +18,8 @@ router.use(genresRouter);
 router.use(subscriptionRouter);
 router.use(statsRouter);
 router.use(storageRouter);
+router.use(notificationsRouter);
+router.use(midtransRouter);
 
 export default router;
+

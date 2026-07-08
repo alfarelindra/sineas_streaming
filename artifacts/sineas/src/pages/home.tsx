@@ -109,7 +109,7 @@ export default function Home() {
       {/* Hero */}
       {heroVideo && <HeroSection video={heroVideo as any} />}
       {!heroVideo && loadingFeatured && (
-        <div className="w-full h-[70vh] bg-gray-900 animate-pulse" />
+        <div className="w-full h-[70vh] bg-muted animate-pulse" />
       )}
 
       {/* Content rows */}
@@ -124,12 +124,12 @@ export default function Home() {
             <div className="flex gap-3 overflow-x-auto px-6 sm:px-10 pb-2 scrollbar-hide" style={{ scrollbarWidth: "none" }}>
               {(continueWatching ?? []).map((v: any) => (
                 <Link key={v.id} href={`/watch/${v.id}`} className="group flex-shrink-0 w-48 sm:w-56">
-                  <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-900">
+                  <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
                     {v.thumbnailUrl ? (
                       <img src={v.thumbnailUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-800">
-                        <Play className="w-8 h-8 text-gray-600" />
+                      <div className="w-full h-full flex items-center justify-center bg-muted">
+                        <Play className="w-8 h-8 text-muted-foreground" />
                       </div>
                     )}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
@@ -147,7 +147,7 @@ export default function Home() {
                       <X className="w-3.5 h-3.5" />
                     </button>
                     {/* Progress bar */}
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40">
                       <div
                         className="h-full bg-yellow-400"
                         style={{ width: `${Math.min(100, v.progressPercent ?? 0)}%` }}
@@ -176,7 +176,7 @@ export default function Home() {
 
       <footer className="border-t border-border py-10 px-10 flex flex-col items-center gap-3 text-center">
         <Logo href="/" size="sm" />
-        <p className="text-xs text-muted-foreground">© 2025 Sineas. Platform streaming video Indonesia terbaik.</p>
+        <p className="text-xs text-muted-foreground">© 2026 Sineas. Platform streaming video Indonesia terbaik.</p>
       </footer>
     </div>
   );

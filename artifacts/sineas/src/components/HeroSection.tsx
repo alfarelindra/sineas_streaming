@@ -23,11 +23,11 @@ export default function HeroSection({ video }: HeroSectionProps) {
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-gray-900" />
+          <div className="w-full h-full bg-muted" />
         )}
         {/* Gradient overlays */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f1e] via-transparent to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-black/20" />
       </div>
 
       {/* Content */}
@@ -42,7 +42,7 @@ export default function HeroSection({ video }: HeroSectionProps) {
             {video.title}
           </h1>
           {video.description && (
-            <p className="text-gray-300 text-sm sm:text-base line-clamp-3 mb-6">
+            <p className="text-white/75 text-sm sm:text-base line-clamp-3 mb-6">
               {video.description}
             </p>
           )}

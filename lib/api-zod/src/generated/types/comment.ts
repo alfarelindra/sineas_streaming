@@ -9,7 +9,11 @@
 export interface Comment {
   id: number;
   videoId: number;
+  /** @nullable */
+  parentId?: number | null;
   authorName: string;
+  /** @nullable */
+  authorAvatar?: string | null;
   authorId?: string;
   body: string;
   createdAt: Date;

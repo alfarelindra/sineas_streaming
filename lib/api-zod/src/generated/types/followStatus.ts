@@ -6,8 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface CommentInput {
-  /** @minLength 1 */
-  body: string;
-  parentId?: number;
+export interface FollowStatus {
+  creatorId: string;
+  followerCount: number;
+  isFollowing: boolean;
 }

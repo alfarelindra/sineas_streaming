@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
-import { useAuth } from "@clerk/react";
-import { useCreateVideo } from "@workspace/api-client-react";
+import { useAuth, useUser } from "@clerk/react";
+import { useCreateVideo, useGetMe, useGetSubscriptionStatus, useGetFollowStatus } from "@workspace/api-client-react";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
-import { Upload as UploadIcon, Film, Image, CheckCircle2, AlertCircle, Link as LinkIcon } from "lucide-react";
+import { Upload as UploadIcon, Film, Image, CheckCircle2, AlertCircle, Link as LinkIcon, Play, Crown, Users, Info } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 
@@ -33,11 +33,17 @@ async function uploadFile(file: File): Promise<string> {
 export default function UploadPage() {
   const [, setLocation] = useLocation();
   const { isSignedIn } = useAuth();
+  const { user } = useUser();
   const { toast } = useToast();
   const createVideo = useCreateVideo();
+  const { data: me } = useGetMe();
+  const { data: subStatus } = useGetSubscriptionStatus({ query: { enabled: !!isSignedIn } as any });
+  const { data: followData } = useGetFollowStatus(user?.id ?? "", { query: { enabled: !!user?.id } as any });
 
   const [step, setStep] = useState<UploadStep>("form");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const [uploadedVideoId, setUploadedVideoId] = useState<number | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [genre, setGenre] = useState("");
@@ -71,6 +77,20 @@ export default function UploadPage() {
     if (!title.trim()) { toast({ title: "Judul diperlukan", variant: "destructive" }); return; }
     if (!videoUrl && !videoFile) { toast({ title: "File video atau URL diperlukan", variant: "destructive" }); return; }
 
+    // Validate URL format if using direct URL mode
+    if (useDirectUrl && videoUrl) {
+      try { new URL(videoUrl); } catch {
+        toast({ title: "URL video tidak valid", description: "Masukkan URL lengkap (dimulai dengan https://)", variant: "destructive" });
+        return;
+      }
+    }
+    if (thumbnailUrl) {
+      try { new URL(thumbnailUrl); } catch {
+        toast({ title: "URL thumbnail tidak valid", description: "Masukkan URL lengkap (dimulai dengan https://)", variant: "destructive" });
+        return;
+      }
+    }
+
     setStep("uploading");
     setProgress(10);
 
@@ -88,7 +108,7 @@ export default function UploadPage() {
         setProgress(80);
       }
 
-      await createVideo.mutateAsync({
+      const created = await createVideo.mutateAsync({
         data: {
           title: title.trim(),
           description: description.trim() || undefined,
@@ -103,9 +123,19 @@ export default function UploadPage() {
       });
 
       setProgress(100);
+      setUploadedVideoId((created as any)?.id ?? null);
       setStep("done");
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error("Upload error details:", err);
+      let msg = "Terjadi kesalahan. Coba lagi.";
+      if (err && typeof err === "object") {
+        if (err.data && typeof err.data === "object" && err.data.error) {
+          msg = err.data.error;
+        } else if (err.message) {
+          msg = err.message;
+        }
+      }
+      setErrorMessage(msg);
       setStep("error");
     }
   };
@@ -146,19 +176,44 @@ export default function UploadPage() {
 
         {step === "done" && (
           <div className="text-center py-24 space-y-4">
-            <CheckCircle2 className="w-16 h-16 text-green-400 mx-auto" />
-            <h2 className="text-2xl font-bold text-green-400">Video Berhasil Diupload!</h2>
-            <p className="text-muted-foreground">Videomu kini tersedia di Sineas</p>
-            <div className="flex justify-center gap-3 mt-6">
-              <Button onClick={() => setLocation("/")} className="bg-blue-600 hover:bg-blue-700">
-                Kembali ke Beranda
+            <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-10 h-10 text-green-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground">Video Berhasil Diupload!</h2>
+            <p className="text-muted-foreground">Videomu kini tersedia di Sineas dan bisa ditonton oleh semua orang.</p>
+            <div className="flex flex-col sm:flex-row justify-center gap-3 mt-6">
+              {uploadedVideoId && (
+                <Button
+                  onClick={() => setLocation(`/watch/${uploadedVideoId}`)}
+                  className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold gap-2"
+                >
+                  <Play className="w-4 h-4 fill-black" />
+                  Tonton Video Sekarang
+                </Button>
+              )}
+              <Button
+                onClick={() => {
+                  if (user?.id) {
+                    setLocation(`/creator/${encodeURIComponent(user.id)}?tab=dashboard`);
+                  } else {
+                    setLocation("/");
+                  }
+                }}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Lihat Dashboard
               </Button>
               <Button
                 variant="outline"
-                onClick={() => { setStep("form"); setTitle(""); setDescription(""); setVideoUrl(""); setThumbnailUrl(""); setVideoFile(null); setThumbnailFile(null); setProgress(0); }}
+                onClick={() => {
+                  setStep("form");
+                  setTitle(""); setDescription(""); setVideoUrl("");
+                  setThumbnailUrl(""); setVideoFile(null); setThumbnailFile(null);
+                  setProgress(0); setUploadedVideoId(null);
+                }}
                 className="border-border text-muted-foreground"
               >
-                Upload Lagi
+                Upload Video Lain
               </Button>
             </div>
           </div>
@@ -168,7 +223,7 @@ export default function UploadPage() {
           <div className="text-center py-24 space-y-4">
             <AlertCircle className="w-16 h-16 text-yellow-400 mx-auto" />
             <h2 className="text-2xl font-bold text-yellow-400">Upload Gagal</h2>
-            <p className="text-muted-foreground">Terjadi kesalahan. Coba lagi.</p>
+            <p className="text-muted-foreground">{errorMessage || "Terjadi kesalahan. Coba lagi."}</p>
             <Button onClick={() => setStep("form")} className="bg-blue-600 hover:bg-blue-700">Coba Lagi</Button>
           </div>
         )}
@@ -178,6 +233,11 @@ export default function UploadPage() {
             <div>
               <h1 className="text-3xl font-black mb-1">Upload Video</h1>
               <p className="text-muted-foreground text-sm">Bagikan konten terbaikmu</p>
+              {me?.displayName && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Akan diposting sebagai: <span className="font-medium text-foreground">{me.displayName}</span>
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -276,7 +336,7 @@ export default function UploadPage() {
             </div>
 
             {isPremium && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label className="text-muted-foreground text-sm">Minimum Paket</Label>
                 <Select value={minimumPlan} onValueChange={setMinimumPlan}>
                   <SelectTrigger className="bg-card border-border text-foreground">
@@ -288,6 +348,63 @@ export default function UploadPage() {
                     ))}
                   </SelectContent>
                 </Select>
+
+                {/* Follower/Subscription Requirements Panel */}
+                {minimumPlan && (() => {
+                  const thresholds: Record<string, number> = { basic: 100, premium: 500, ultra: 1000 };
+                  const labels: Record<string, string> = { basic: "Basic", premium: "Premium", ultra: "Ultra" };
+                  const required = thresholds[minimumPlan] ?? 0;
+                  const currentFollowers = (followData as any)?.followerCount ?? 0;
+                  const planTierRank: Record<string, number> = { basic: 1, premium: 2, ultra: 3 };
+                  const userPlan = subStatus?.plan ?? "";
+                  const hasSubscription = subStatus?.isSubscribed && (planTierRank[userPlan] ?? 0) >= (planTierRank[minimumPlan] ?? 0);
+                  const hasFollowers = currentFollowers >= required;
+                  const isEligible = hasSubscription || hasFollowers;
+
+                  return (
+                    <div className={`rounded-xl border p-4 text-sm space-y-3 ${
+                      isEligible ? "bg-emerald-500/5 border-emerald-500/20" : "bg-amber-500/5 border-amber-500/20"
+                    }`}>
+                      <div className="flex items-center gap-2">
+                        <Info className={`w-4 h-4 flex-shrink-0 ${isEligible ? "text-emerald-400" : "text-amber-400"}`} />
+                        <span className={`font-semibold ${isEligible ? "text-emerald-300" : "text-amber-300"}`}>
+                          {isEligible ? "✓ Kamu memenuhi syarat" : "⚠ Syarat diperlukan"}
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        {/* Subscription check */}
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-1.5 text-muted-foreground">
+                            <Crown className="w-3.5 h-3.5" />
+                            Langganan {labels[minimumPlan]}
+                          </span>
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                            hasSubscription ? "bg-emerald-500/20 text-emerald-400" : "bg-muted text-muted-foreground"
+                          }`}>
+                            {hasSubscription ? "✓ Aktif" : subStatus?.isSubscribed ? `Paket ${subStatus.plan}` : "Belum berlangganan"}
+                          </span>
+                        </div>
+                        {/* Follower count check */}
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-1.5 text-muted-foreground">
+                            <Users className="w-3.5 h-3.5" />
+                            Min. {required.toLocaleString("id-ID")} followers
+                          </span>
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                            hasFollowers ? "bg-emerald-500/20 text-emerald-400" : "bg-amber-500/20 text-amber-400"
+                          }`}>
+                            {currentFollowers.toLocaleString("id-ID")} followers
+                          </span>
+                        </div>
+                      </div>
+                      {!isEligible && (
+                        <p className="text-xs text-muted-foreground">
+                          Kamu perlu salah satu syarat di atas untuk upload dengan paket {labels[minimumPlan]}.
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             )}
 

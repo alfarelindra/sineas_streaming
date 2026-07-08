@@ -1,12 +1,14 @@
 import { Link, useLocation } from "wouter";
-import { useAuth, UserButton } from "@clerk/react";
-import { Search, Upload, Menu, X, Sun, Moon, LayoutDashboard, Bookmark, History } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useAuth, useUser, useClerk } from "@clerk/react";
+import { Search, Upload, Menu, X, Sun, Moon, LayoutDashboard, Bookmark, History, Settings, LogOut, Crown } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTheme } from "@/components/ThemeProvider";
 import NotificationBell from "@/components/NotificationBell";
 import Logo from "@/components/Logo";
+import { socket } from "@/lib/socket";
+import { useGetSubscriptionStatus } from "@workspace/api-client-react";
 
 function SignedIn({ children }: { children: React.ReactNode }) {
   const { isSignedIn } = useAuth();
@@ -28,6 +30,36 @@ export default function Navbar({ onSearch }: NavbarProps) {
   const [searchVal, setSearchVal] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const { theme, toggle } = useTheme();
+  const { user } = useUser();
+  const { isSignedIn } = useAuth();
+  const { data: subStatus } = useGetSubscriptionStatus({ query: { enabled: !!isSignedIn } as any });
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [signOutModalOpen, setSignOutModalOpen] = useState(false);
+  const { openUserProfile, signOut } = useClerk();
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const [activeUsers, setActiveUsers] = useState(1);
+
+  useEffect(() => {
+    // Listen to active users broadcast
+    socket.on("global-active-count", (count: number) => {
+      setActiveUsers(count);
+    });
+
+    return () => {
+      socket.off("global-active-count");
+    };
+  }, []);
 
   const goSearch = (q: string) => {
     setSearchOpen(false);
@@ -84,6 +116,12 @@ export default function Navbar({ onSearch }: NavbarProps) {
           </div>
 
           <div className="flex items-center gap-1 ml-auto">
+            {/* Active Users Indicator */}
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold mr-1.5 select-none hover:scale-[1.02] transition-all">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>{activeUsers} Aktif</span>
+            </div>
+
             {searchOpen ? (
               <form
                 className="flex items-center gap-2"
@@ -130,19 +168,89 @@ export default function Navbar({ onSearch }: NavbarProps) {
                   <span className="text-xs">Riwayat</span>
                 </Button>
               </Link>
-              <Link href="/dashboard" className="hidden sm:block">
-                <Button size="sm" variant="ghost" className={`${iconCls} gap-1`}>
-                  <LayoutDashboard className="w-4 h-4" />
-                  <span className="text-xs">Dashboard</span>
-                </Button>
-              </Link>
-              <Link href="/upload">
+              {user?.id && (
+                <Link href={`/creator/${encodeURIComponent(user.id)}`} className="hidden sm:block">
+                  <Button size="sm" variant="ghost" className={`${iconCls} gap-1`}>
+                    <LayoutDashboard className="w-4 h-4" />
+                    <span className="text-xs">Channel Saya</span>
+                  </Button>
+                </Link>
+              )}
+              <Link href="/upload" className="hidden sm:block">
                 <Button size="sm" variant="ghost" className={`${iconCls} hidden sm:flex gap-1`}>
                   <Upload className="w-4 h-4" />
                   <span className="text-xs">Upload</span>
                 </Button>
               </Link>
-              <UserButton appearance={{ variables: { colorPrimary: "hsl(221, 83%, 53%)" } }} />
+              <div ref={profileRef} className="relative flex items-center">
+                <button
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  className="relative w-8 h-8 rounded-full overflow-hidden border border-border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-all active:scale-95"
+                >
+                  {user?.imageUrl ? (
+                    <img src={user.imageUrl} alt={user.fullName || "User"} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs uppercase">
+                      {user?.firstName?.slice(0, 1) || user?.emailAddresses[0]?.emailAddress?.slice(0, 1) || "U"}
+                    </div>
+                  )}
+                </button>
+
+                {profileOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-72 bg-popover border border-border rounded-xl shadow-2xl z-50 overflow-hidden text-popover-foreground animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="p-4 border-b border-border flex items-center gap-3 bg-muted/20">
+                      {user?.imageUrl ? (
+                        <img src={user.imageUrl} alt={user.fullName || "User"} className="w-10 h-10 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm uppercase">
+                          {user?.firstName?.slice(0, 1) || user?.emailAddresses[0]?.emailAddress?.slice(0, 1) || "U"}
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-bold text-sm truncate">{user?.fullName || "Pengguna Sineas"}</h4>
+                        <p className="text-xs text-muted-foreground truncate">{user?.primaryEmailAddress?.emailAddress}</p>
+                        {subStatus?.isSubscribed && subStatus.plan && (() => {
+                          const badges: Record<string, string> = {
+                            ultra: "bg-purple-500/20 text-purple-300 border border-purple-500/30",
+                            premium: "bg-amber-500/20 text-amber-300 border border-amber-500/30",
+                            basic: "bg-blue-500/20 text-blue-300 border border-blue-500/30",
+                          };
+                          const labels: Record<string, string> = { ultra: "Ultra", premium: "Premium", basic: "Basic" };
+                          const cls = badges[subStatus.plan] ?? "bg-muted text-muted-foreground";
+                          return (
+                            <span className={`inline-flex items-center gap-1 mt-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${cls}`}>
+                              <Crown className="w-2.5 h-2.5" />
+                              {labels[subStatus.plan] ?? subStatus.plan}
+                            </span>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                    <div className="p-1">
+                      <button
+                        onClick={() => {
+                          setProfileOpen(false);
+                          setLocation("/settings");
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-accent rounded-lg transition-colors text-left"
+                      >
+                        <Settings className="w-4 h-4 text-muted-foreground" />
+                        <span>Manage account</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setProfileOpen(false);
+                          setSignOutModalOpen(true);
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-red-500/10 text-red-500 rounded-lg transition-colors text-left"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Sign out</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </SignedIn>
 
             <SignedOut>
@@ -163,18 +271,53 @@ export default function Navbar({ onSearch }: NavbarProps) {
         </div>
 
         {menuOpen && (
-          <div className="md:hidden bg-black/95 pb-4 pt-2 border-t border-white/10">
+          <div className="md:hidden bg-background/98 backdrop-blur-md pb-4 pt-2 border-t border-border">
             {navLinks.map((l) => (
-              <Link key={l.href} href={l.href} className="block px-4 py-2 text-sm text-gray-300 hover:text-white" onClick={() => setMenuOpen(false)}>
+              <Link key={l.href} href={l.href} className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" onClick={() => setMenuOpen(false)}>
                 {l.label}
               </Link>
             ))}
             <SignedIn>
-              <Link href="/watchlist" className="block px-4 py-2 text-sm text-gray-300 hover:text-white" onClick={() => setMenuOpen(false)}>Daftar Tonton</Link>
-              <Link href="/history" className="block px-4 py-2 text-sm text-gray-300 hover:text-white" onClick={() => setMenuOpen(false)}>Riwayat Tontonan</Link>
-              <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-300 hover:text-white" onClick={() => setMenuOpen(false)}>Dashboard</Link>
-              <Link href="/upload" className="block px-4 py-2 text-sm text-gray-300 hover:text-white" onClick={() => setMenuOpen(false)}>Upload Video</Link>
+              <Link href="/watchlist" className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" onClick={() => setMenuOpen(false)}>Daftar Tonton</Link>
+              <Link href="/history" className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" onClick={() => setMenuOpen(false)}>Riwayat Tontonan</Link>
+              {user?.id && (
+                <Link href={`/creator/${encodeURIComponent(user.id)}`} className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" onClick={() => setMenuOpen(false)}>
+                  Channel Saya
+                </Link>
+              )}
+              <Link href="/upload" className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" onClick={() => setMenuOpen(false)}>Upload Video</Link>
             </SignedIn>
+          </div>
+        )}
+        {signOutModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-popover border border-border rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center animate-in zoom-in-95 duration-200">
+              <div className="mx-auto w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
+                <LogOut className="w-6 h-6 text-red-500" />
+              </div>
+              <h3 className="text-lg font-bold text-foreground mb-2">Konfirmasi Keluar</h3>
+              <p className="text-sm text-muted-foreground mb-6">
+                Apakah Anda yakin ingin keluar dari Sineas?
+              </p>
+              <div className="flex gap-3 justify-center">
+                <Button
+                  variant="outline"
+                  onClick={() => setSignOutModalOpen(false)}
+                  className="flex-1 bg-transparent border-border hover:bg-accent text-foreground text-sm font-medium h-10 px-4 rounded-xl transition-all active:scale-98"
+                >
+                  Tidak
+                </Button>
+                <Button
+                  onClick={() => {
+                    setSignOutModalOpen(false);
+                    signOut();
+                  }}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm font-medium h-10 px-4 rounded-xl transition-all active:scale-98"
+                >
+                  Ya, Yakin
+                </Button>
+              </div>
+            </div>
           </div>
         )}
       </div>

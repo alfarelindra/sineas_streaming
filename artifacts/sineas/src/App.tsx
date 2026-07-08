@@ -11,11 +11,11 @@ import Watch from "@/pages/watch";
 import UploadPage from "@/pages/upload";
 import Subscription from "@/pages/subscription";
 import Profile from "@/pages/profile";
-import Dashboard from "@/pages/dashboard";
 import SearchPage from "@/pages/search";
 import CreatorPage from "@/pages/creator";
 import WatchlistPage from "@/pages/watchlist";
 import HistoryPage from "@/pages/history";
+import SettingsPage from "@/pages/settings";
 import { useEffect } from "react";
 import { setAuthTokenGetter } from "@workspace/api-client-react";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -72,7 +72,7 @@ function Router() {
       <Route path="/upload" component={UploadPage} />
       <Route path="/subscription" component={Subscription} />
       <Route path="/profile" component={Profile} />
-      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/settings" component={SettingsPage} />
       <Route path="/search" component={SearchPage} />
       <Route path="/creator/:id" component={CreatorPage} />
       <Route path="/watchlist" component={WatchlistPage} />
@@ -105,11 +105,22 @@ function App() {
         routerPush={(to) => setLocation(stripBase(to))}
         routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
         appearance={{
+          layout: {
+            unsafe_disableDevelopmentModeWarnings: true,
+          },
           variables: {
             colorPrimary: "hsl(221, 83%, 53%)",
             colorBackground: "hsl(223, 44%, 11%)",
             colorInputBackground: "hsl(222, 30%, 17%)",
+            colorInput: "hsl(222, 30%, 17%)",
             colorText: "white",
+            colorForeground: "white",
+            colorTextSecondary: "rgba(255, 255, 255, 0.8)",
+            colorMutedForeground: "rgba(255, 255, 255, 0.8)",
+            colorTextOnPrimaryBackground: "white",
+            colorPrimaryForeground: "white",
+            colorInputText: "white",
+            colorInputForeground: "white",
           },
         }}
       >

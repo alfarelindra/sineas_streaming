@@ -12,6 +12,7 @@ export * from './comment';
 export * from './commentInput';
 export * from './creatorProfile';
 export * from './errorEnvelope';
+export * from './followStatus';
 export * from './genre';
 export * from './getTrendingVideosParams';
 export * from './getWatchHistoryParams';

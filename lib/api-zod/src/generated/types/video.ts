@@ -15,6 +15,16 @@ export interface Video {
   uploaderId?: string;
   videoUrl: string;
   /** @nullable */
+  url_360p?: string | null;
+  /** @nullable */
+  url_480p?: string | null;
+  /** @nullable */
+  url_720p?: string | null;
+  /** @nullable */
+  url_1080p?: string | null;
+  /** @nullable */
+  url_4k?: string | null;
+  /** @nullable */
   thumbnailUrl: string | null;
   /** Duration in seconds */
   duration: number;

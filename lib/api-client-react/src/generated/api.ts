@@ -26,6 +26,7 @@ import type {
   CommentInput,
   CreatorProfile,
   ErrorEnvelope,
+  FollowStatus,
   Genre,
   GetTrendingVideosParams,
   GetWatchHistoryParams,
@@ -1927,6 +1928,223 @@ export function useGetCreatorProfile<TData = Awaited<ReturnType<typeof getCreato
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetCreatorProfileQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getFollowCreatorUrl = (id: string,) => {
+
+
+
+
+  return `/api/creators/${id}/follow`
+}
+
+/**
+ * @summary Follow a creator
+ */
+export const followCreator = async (id: string, options?: RequestInit): Promise<FollowStatus> => {
+
+  return customFetch<FollowStatus>(getFollowCreatorUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getFollowCreatorMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof followCreator>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof followCreator>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['followCreator'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof followCreator>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  followCreator(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type FollowCreatorMutationResult = NonNullable<Awaited<ReturnType<typeof followCreator>>>
+
+    export type FollowCreatorMutationError = ErrorType<void>
+
+    /**
+ * @summary Follow a creator
+ */
+export const useFollowCreator = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof followCreator>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof followCreator>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getFollowCreatorMutationOptions(options));
+    }
+
+export const getUnfollowCreatorUrl = (id: string,) => {
+
+
+
+
+  return `/api/creators/${id}/follow`
+}
+
+/**
+ * @summary Unfollow a creator
+ */
+export const unfollowCreator = async (id: string, options?: RequestInit): Promise<FollowStatus> => {
+
+  return customFetch<FollowStatus>(getUnfollowCreatorUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getUnfollowCreatorMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unfollowCreator>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof unfollowCreator>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['unfollowCreator'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof unfollowCreator>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  unfollowCreator(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UnfollowCreatorMutationResult = NonNullable<Awaited<ReturnType<typeof unfollowCreator>>>
+
+    export type UnfollowCreatorMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Unfollow a creator
+ */
+export const useUnfollowCreator = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unfollowCreator>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof unfollowCreator>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getUnfollowCreatorMutationOptions(options));
+    }
+
+export const getGetFollowStatusUrl = (id: string,) => {
+
+
+
+
+  return `/api/creators/${id}/follow-status`
+}
+
+/**
+ * @summary Get a creator's follower count and whether the current user follows them
+ */
+export const getFollowStatus = async (id: string, options?: RequestInit): Promise<FollowStatus> => {
+
+  return customFetch<FollowStatus>(getGetFollowStatusUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFollowStatusQueryKey = (id: string,) => {
+    return [
+    `/api/creators/${id}/follow-status`
+    ] as const;
+    }
+
+
+export const getGetFollowStatusQueryOptions = <TData = Awaited<ReturnType<typeof getFollowStatus>>, TError = ErrorType<unknown>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFollowStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFollowStatusQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFollowStatus>>> = ({ signal }) => getFollowStatus(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFollowStatus>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFollowStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getFollowStatus>>>
+export type GetFollowStatusQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get a creator's follower count and whether the current user follows them
+ */
+
+export function useGetFollowStatus<TData = Awaited<ReturnType<typeof getFollowStatus>>, TError = ErrorType<unknown>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFollowStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFollowStatusQueryOptions(id,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

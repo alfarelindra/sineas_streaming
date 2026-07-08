@@ -300,26 +300,32 @@ export default function HistoryPage() {
         {!isLoading && items.length > 0 && (
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {items.map((v) => (
-                <div key={v.id} className="group/item relative">
-                  <VideoCard video={v} />
-                  {/* Watched-on hint */}
-                  <p className="mt-1 px-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
-                    <Clock className="w-3 h-3 flex-shrink-0" />
-                    {v.completed ? "Selesai · " : ""}
-                    {formatWatchedAt(v.watchedAt)}
-                  </p>
-                  {/* Remove button — appears on hover */}
-                  <button
-                    onClick={() => handleRemove(v.id, v.title)}
-                    disabled={removing.has(v.id)}
-                    title="Hapus dari riwayat"
-                    className="absolute top-2 right-2 opacity-0 group-hover/item:opacity-100 transition-all duration-200 bg-black/70 hover:bg-red-600 backdrop-blur-sm rounded-full p-1.5 text-white disabled:opacity-50 disabled:cursor-not-allowed z-10"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ))}
+              {items.map((v) => {
+                // progressPercent comes directly from the API
+                const progressPercent = v.completed
+                  ? 100
+                  : Math.min(100, Math.round(v.progressPercent ?? 0));
+                return (
+                  <div key={v.id} className="group/item relative">
+                    <VideoCard video={{ ...v, progressPercent }} />
+                    {/* Watched-on hint */}
+                    <p className="mt-1 px-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
+                      <Clock className="w-3 h-3 flex-shrink-0" />
+                      {v.completed ? "Selesai · " : progressPercent > 0 ? `${progressPercent}% · ` : ""}
+                      {formatWatchedAt(v.watchedAt)}
+                    </p>
+                    {/* Remove button — appears on hover */}
+                    <button
+                      onClick={() => handleRemove(v.id, v.title)}
+                      disabled={removing.has(v.id)}
+                      title="Hapus dari riwayat"
+                      className="absolute top-2 right-2 opacity-0 group-hover/item:opacity-100 transition-all duration-200 bg-black/70 hover:bg-red-600 backdrop-blur-sm rounded-full p-1.5 text-white disabled:opacity-50 disabled:cursor-not-allowed z-10"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Pagination */}

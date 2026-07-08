@@ -1,5 +1,7 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { Readable } from "stream";
+import path from "node:path";
+import fs from "node:fs";
 import {
   RequestUploadUrlBody,
   RequestUploadUrlResponse,
@@ -43,6 +45,46 @@ router.post("/storage/uploads/request-url", async (req: Request, res: Response) 
 });
 
 /**
+ * PUT /storage/local-upload
+ *
+ * Direct local file upload handler when running outside of Replit.
+ * Writes the raw request body stream directly to local-storage/uploads/<id>.
+ */
+router.put("/storage/local-upload", async (req: Request, res: Response) => {
+  const id = req.query.id as string;
+  if (!id) {
+    res.status(400).json({ error: "Missing upload id" });
+    return;
+  }
+
+  try {
+    const localDir = objectStorageService.getLocalDir();
+    const uploadDir = path.join(localDir, "uploads");
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    const filePath = path.join(uploadDir, id);
+    const writeStream = fs.createWriteStream(filePath);
+
+    req.pipe(writeStream);
+
+    writeStream.on("finish", () => {
+      res.status(200).json({ success: true });
+    });
+
+    writeStream.on("error", (err) => {
+      req.log.error({ err }, "Error writing local file");
+      res.status(500).json({ error: "Failed to write file to disk" });
+    });
+  } catch (error) {
+    req.log.error({ err: error }, "Local upload failed");
+    res.status(500).json({ error: "Local upload failed" });
+  }
+});
+
+
+/**
  * GET /storage/public-objects/*
  *
  * Serve public assets from PUBLIC_OBJECT_SEARCH_PATHS.
@@ -50,6 +92,17 @@ router.post("/storage/uploads/request-url", async (req: Request, res: Response) 
  * IMPORTANT: Always provide this endpoint when object storage is set up.
  */
 router.get("/storage/public-objects/*filePath", async (req: Request, res: Response) => {
+  if (objectStorageService.isLocal()) {
+    const raw = req.params.filePath;
+    const filePath = Array.isArray(raw) ? raw.join("/") : raw;
+    const localFile = path.resolve(objectStorageService.getLocalDir(), filePath);
+    if (fs.existsSync(localFile)) {
+      res.sendFile(localFile);
+    } else {
+      res.status(404).json({ error: "File not found" });
+    }
+    return;
+  }
   try {
     const raw = req.params.filePath;
     const filePath = Array.isArray(raw) ? raw.join("/") : raw;
@@ -84,6 +137,17 @@ router.get("/storage/public-objects/*filePath", async (req: Request, res: Respon
  * be protected with authentication or ACL checks based on the use case.
  */
 router.get("/storage/objects/*path", async (req: Request, res: Response) => {
+  if (objectStorageService.isLocal()) {
+    const raw = req.params.path;
+    const wildcardPath = Array.isArray(raw) ? raw.join("/") : raw;
+    const localFile = path.resolve(objectStorageService.getLocalDir(), wildcardPath);
+    if (fs.existsSync(localFile)) {
+      res.sendFile(localFile);
+    } else {
+      res.status(404).json({ error: "File not found" });
+    }
+    return;
+  }
   try {
     const raw = req.params.path;
     const wildcardPath = Array.isArray(raw) ? raw.join("/") : raw;

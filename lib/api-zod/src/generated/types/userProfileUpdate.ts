@@ -8,6 +8,7 @@
 
 export interface UserProfileUpdate {
   displayName?: string;
+  username?: string;
   bio?: string;
   avatarUrl?: string;
 }

@@ -134,3 +134,81 @@ html.light .min-h-screen.bg-\[#0a0f1e\] {
     @apply bg-background text-foreground antialiased selection:bg-primary selection:text-white;
   }
 }
+
+/* ── Scrollbar Hide Utility ── */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Light Mode Additional Overrides ── */
+/* Ensure card surfaces look clean in light mode */
+html.light .bg-card\/60 {
+  background-color: hsl(0 0% 100% / 0.8) !important;
+}
+
+/* Dividers are always visible */
+html.light [class*="border-border"] {
+  border-color: hsl(0, 0%, 88%);
+}
+
+/* Backdrop blur panels in light mode */
+html.light .backdrop-blur-md {
+  background-color: hsl(0, 0%, 97%);
+}
+
+/* ── Hide Clerk "Development mode" badge ──────────────────────────────────
+   Clerk injects an orange "Development mode" pill at the bottom of the
+   UserButton popup when using a test publishable key (pk_test_…).
+   We target every known selector Clerk has used across versions so the
+   badge never shows to end-users regardless of Clerk SDK version.
+   ──────────────────────────────────────────────────────────────────────── */
+/* v5 / current */
+[data-localization-key="developmentMode"],
+[data-clerk-environment="development"] [class*="DevelopmentMode"],
+.cl-internal-b3fm6y,
+.cl-badge[data-color="warning"],
+/* Generic fallback — hides any element whose text content is "Development mode" */
+/* rendered by the Clerk popup iframe / portal */
+div[class*="clerk"] [class*="developmentBadge"],
+div[class*="clerk"] [class*="development-badge"],
+div[class*="clerk"] [class*="devMode"],
+[data-testid="development-mode-badge"] {
+  display: none !important;
+}
+
+/* ── Modal animation utilities ────────────────────────────────────────── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes zoom-in-95 {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-in {
+  animation-fill-mode: both;
+}
+.fade-in {
+  animation-name: fade-in;
+}
+.zoom-in-95 {
+  animation-name: zoom-in-95;
+}
+.duration-200 {
+  animation-duration: 200ms;
+}
+
+/* Hide Clerk development mode badge and branding */
+div[class*="cl-developmentMode"],
+div[class*="cl-footer"],
+.cl-developmentMode,
+.cl-footer,
+[class*="developmentMode"],
+[class*="cl-internal-"][class*="developmentMode"] {
+  display: none !important;
+}
+

@@ -22,6 +22,16 @@ export interface Video {
   uploaderId?: string;
   videoUrl: string;
   /** @nullable */
+  url_360p?: string | null;
+  /** @nullable */
+  url_480p?: string | null;
+  /** @nullable */
+  url_720p?: string | null;
+  /** @nullable */
+  url_1080p?: string | null;
+  /** @nullable */
+  url_4k?: string | null;
+  /** @nullable */
   thumbnailUrl: string | null;
   /** Duration in seconds */
   duration: number;
@@ -125,7 +135,11 @@ export interface LikeStatus {
 export interface Comment {
   id: number;
   videoId: number;
+  /** @nullable */
+  parentId?: number | null;
   authorName: string;
+  /** @nullable */
+  authorAvatar?: string | null;
   authorId?: string;
   body: string;
   createdAt: string;
@@ -134,6 +148,7 @@ export interface Comment {
 export interface CommentInput {
   /** @minLength 1 */
   body: string;
+  parentId?: number;
 }
 
 export interface CreatorProfile {
@@ -146,6 +161,13 @@ export interface CreatorProfile {
   videoCount: number;
   totalViews: number;
   totalLikes: number;
+  followerCount: number;
+}
+
+export interface FollowStatus {
+  creatorId: string;
+  followerCount: number;
+  isFollowing: boolean;
 }
 
 export interface Genre {
@@ -160,6 +182,8 @@ export interface UserProfile {
   clerkId: string;
   displayName: string;
   /** @nullable */
+  username?: string | null;
+  /** @nullable */
   bio?: string | null;
   /** @nullable */
   avatarUrl?: string | null;
@@ -170,6 +194,7 @@ export interface UserProfile {
 
 export interface UserProfileUpdate {
   displayName?: string;
+  username?: string;
   bio?: string;
   avatarUrl?: string;
 }

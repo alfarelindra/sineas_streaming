@@ -38,6 +38,11 @@ export const ListVideosResponse = zod.object({
   "uploaderName": zod.string(),
   "uploaderId": zod.string().optional(),
   "videoUrl": zod.string(),
+  "url_360p": zod.string().nullish(),
+  "url_480p": zod.string().nullish(),
+  "url_720p": zod.string().nullish(),
+  "url_1080p": zod.string().nullish(),
+  "url_4k": zod.string().nullish(),
   "thumbnailUrl": zod.string().nullable(),
   "duration": zod.number().describe('Duration in seconds'),
   "viewCount": zod.number(),
@@ -84,6 +89,11 @@ export const GetFeaturedVideosResponseItem = zod.object({
   "uploaderName": zod.string(),
   "uploaderId": zod.string().optional(),
   "videoUrl": zod.string(),
+  "url_360p": zod.string().nullish(),
+  "url_480p": zod.string().nullish(),
+  "url_720p": zod.string().nullish(),
+  "url_1080p": zod.string().nullish(),
+  "url_4k": zod.string().nullish(),
   "thumbnailUrl": zod.string().nullable(),
   "duration": zod.number().describe('Duration in seconds'),
   "viewCount": zod.number(),
@@ -114,6 +124,11 @@ export const GetTrendingVideosResponseItem = zod.object({
   "uploaderName": zod.string(),
   "uploaderId": zod.string().optional(),
   "videoUrl": zod.string(),
+  "url_360p": zod.string().nullish(),
+  "url_480p": zod.string().nullish(),
+  "url_720p": zod.string().nullish(),
+  "url_1080p": zod.string().nullish(),
+  "url_4k": zod.string().nullish(),
   "thumbnailUrl": zod.string().nullable(),
   "duration": zod.number().describe('Duration in seconds'),
   "viewCount": zod.number(),
@@ -138,6 +153,11 @@ export const GetContinueWatchingResponseItem = zod.object({
   "uploaderName": zod.string(),
   "uploaderId": zod.string().optional(),
   "videoUrl": zod.string(),
+  "url_360p": zod.string().nullish(),
+  "url_480p": zod.string().nullish(),
+  "url_720p": zod.string().nullish(),
+  "url_1080p": zod.string().nullish(),
+  "url_4k": zod.string().nullish(),
   "thumbnailUrl": zod.string().nullable(),
   "duration": zod.number().describe('Duration in seconds'),
   "viewCount": zod.number(),
@@ -169,6 +189,11 @@ export const GetVideoResponse = zod.object({
   "uploaderName": zod.string(),
   "uploaderId": zod.string().optional(),
   "videoUrl": zod.string(),
+  "url_360p": zod.string().nullish(),
+  "url_480p": zod.string().nullish(),
+  "url_720p": zod.string().nullish(),
+  "url_1080p": zod.string().nullish(),
+  "url_4k": zod.string().nullish(),
   "thumbnailUrl": zod.string().nullable(),
   "duration": zod.number().describe('Duration in seconds'),
   "viewCount": zod.number(),
@@ -210,6 +235,11 @@ export const UpdateVideoResponse = zod.object({
   "uploaderName": zod.string(),
   "uploaderId": zod.string().optional(),
   "videoUrl": zod.string(),
+  "url_360p": zod.string().nullish(),
+  "url_480p": zod.string().nullish(),
+  "url_720p": zod.string().nullish(),
+  "url_1080p": zod.string().nullish(),
+  "url_4k": zod.string().nullish(),
   "thumbnailUrl": zod.string().nullable(),
   "duration": zod.number().describe('Duration in seconds'),
   "viewCount": zod.number(),
@@ -251,6 +281,11 @@ export const GetWatchHistoryResponse = zod.object({
   "uploaderName": zod.string(),
   "uploaderId": zod.string().optional(),
   "videoUrl": zod.string(),
+  "url_360p": zod.string().nullish(),
+  "url_480p": zod.string().nullish(),
+  "url_720p": zod.string().nullish(),
+  "url_1080p": zod.string().nullish(),
+  "url_4k": zod.string().nullish(),
   "thumbnailUrl": zod.string().nullable(),
   "duration": zod.number().describe('Duration in seconds'),
   "viewCount": zod.number(),
@@ -375,7 +410,9 @@ export const ListCommentsParams = zod.object({
 export const ListCommentsResponseItem = zod.object({
   "id": zod.number(),
   "videoId": zod.number(),
+  "parentId": zod.number().nullish(),
   "authorName": zod.string(),
+  "authorAvatar": zod.string().nullish(),
   "authorId": zod.string().optional(),
   "body": zod.string(),
   "createdAt": zod.coerce.date()
@@ -394,7 +431,8 @@ export const CreateCommentParams = zod.object({
 
 
 export const CreateCommentBody = zod.object({
-  "body": zod.string().min(1)
+  "body": zod.string().min(1),
+  "parentId": zod.number().optional()
 })
 
 
@@ -417,6 +455,7 @@ export const GetMeResponse = zod.object({
   "id": zod.number(),
   "clerkId": zod.string(),
   "displayName": zod.string(),
+  "username": zod.string().nullish(),
   "bio": zod.string().nullish(),
   "avatarUrl": zod.string().nullish(),
   "stripeCustomerId": zod.string().nullish(),
@@ -429,6 +468,7 @@ export const GetMeResponse = zod.object({
  */
 export const UpdateMeBody = zod.object({
   "displayName": zod.string().optional(),
+  "username": zod.string().optional(),
   "bio": zod.string().optional(),
   "avatarUrl": zod.string().optional()
 })
@@ -437,6 +477,7 @@ export const UpdateMeResponse = zod.object({
   "id": zod.number(),
   "clerkId": zod.string(),
   "displayName": zod.string(),
+  "username": zod.string().nullish(),
   "bio": zod.string().nullish(),
   "avatarUrl": zod.string().nullish(),
   "stripeCustomerId": zod.string().nullish(),
@@ -454,6 +495,11 @@ export const GetWatchlistResponseItem = zod.object({
   "uploaderName": zod.string(),
   "uploaderId": zod.string().optional(),
   "videoUrl": zod.string(),
+  "url_360p": zod.string().nullish(),
+  "url_480p": zod.string().nullish(),
+  "url_720p": zod.string().nullish(),
+  "url_1080p": zod.string().nullish(),
+  "url_4k": zod.string().nullish(),
   "thumbnailUrl": zod.string().nullable(),
   "duration": zod.number().describe('Duration in seconds'),
   "viewCount": zod.number(),
@@ -498,7 +544,50 @@ export const GetCreatorProfileResponse = zod.object({
   "avatarUrl": zod.string().nullish(),
   "videoCount": zod.number(),
   "totalViews": zod.number(),
-  "totalLikes": zod.number()
+  "totalLikes": zod.number(),
+  "followerCount": zod.number()
+})
+
+
+/**
+ * @summary Follow a creator
+ */
+export const FollowCreatorParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const FollowCreatorResponse = zod.object({
+  "creatorId": zod.string(),
+  "followerCount": zod.number(),
+  "isFollowing": zod.boolean()
+})
+
+
+/**
+ * @summary Unfollow a creator
+ */
+export const UnfollowCreatorParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UnfollowCreatorResponse = zod.object({
+  "creatorId": zod.string(),
+  "followerCount": zod.number(),
+  "isFollowing": zod.boolean()
+})
+
+
+/**
+ * @summary Get a creator's follower count and whether the current user follows them
+ */
+export const GetFollowStatusParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetFollowStatusResponse = zod.object({
+  "creatorId": zod.string(),
+  "followerCount": zod.number(),
+  "isFollowing": zod.boolean()
 })
 
 

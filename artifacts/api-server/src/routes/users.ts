@@ -1,19 +1,71 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { usersTable, watchlistTable, videosTable, insertUserSchema } from "@workspace/db";
+import { usersTable, watchlistTable, videosTable, followsTable, insertUserSchema, notificationsTable } from "@workspace/db";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { UpdateMeBody, AddToWatchlistBody } from "@workspace/api-zod";
 import { requireAuth } from "../middlewares/auth";
+import { clerkClient } from "@clerk/express";
 
 const router = Router();
 
 async function getOrCreateUser(clerkId: string, displayName?: string) {
   const [existing] = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
-  if (existing) return existing;
+  if (existing) {
+    if (!existing.avatarUrl || existing.displayName === "Pengguna Sineas" || !existing.username) {
+      try {
+        const clerkUser = await clerkClient.users.getUser(clerkId);
+        const name = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ").trim()
+          || clerkUser.username
+          || clerkUser.emailAddresses[0]?.emailAddress?.split("@")[0]
+          || "Pengguna Sineas";
+        const avatar = clerkUser.imageUrl || null;
+        const uName = clerkUser.username || null;
+
+        const [updated] = await db.update(usersTable)
+          .set({
+            displayName: existing.displayName === "Pengguna Sineas" ? name : existing.displayName,
+            avatarUrl: existing.avatarUrl ? existing.avatarUrl : avatar,
+            username: existing.username ? existing.username : uName,
+            updatedAt: new Date(),
+          })
+          .where(eq(usersTable.clerkId, clerkId))
+          .returning();
+        return updated;
+      } catch (err) {
+        console.error("Gagal melakukan sinkronisasi dengan Clerk:", err);
+      }
+    }
+    return existing;
+  }
+
+  let name = displayName?.trim();
+  let avatar: string | null = null;
+  let uName: string | null = null;
+  try {
+    const clerkUser = await clerkClient.users.getUser(clerkId);
+    name = name || [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ").trim()
+      || clerkUser.username
+      || clerkUser.emailAddresses[0]?.emailAddress?.split("@")[0]
+      || "Pengguna Sineas";
+    avatar = clerkUser.imageUrl || null;
+    uName = clerkUser.username || null;
+  } catch (err) {
+    console.error("Gagal mengambil data user dari Clerk saat pembuatan:", err);
+    name = name || "Pengguna Sineas";
+  }
+
   const [created] = await db.insert(usersTable).values({
     clerkId,
-    displayName: displayName ?? "Pengguna Sineas",
-  }).returning();
+    displayName: name,
+    avatarUrl: avatar,
+    username: uName,
+  }).onConflictDoNothing().returning();
+
+  // Another request may have raced — re-fetch if needed
+  if (!created) {
+    const [refetched] = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
+    return refetched;
+  }
   return created;
 }
 
@@ -25,6 +77,7 @@ router.get("/users/me", requireAuth, async (req, res): Promise<void> => {
     id: user.id,
     clerkId: user.clerkId,
     displayName: user.displayName,
+    username: user.username ?? null,
     bio: user.bio ?? null,
     avatarUrl: user.avatarUrl ?? null,
     stripeCustomerId: user.stripeCustomerId ?? null,
@@ -44,6 +97,27 @@ router.patch("/users/me", requireAuth, async (req, res): Promise<void> => {
     id: user.id,
     clerkId: user.clerkId,
     displayName: user.displayName,
+    username: user.username ?? null,
+    bio: user.bio ?? null,
+    avatarUrl: user.avatarUrl ?? null,
+    stripeCustomerId: user.stripeCustomerId ?? null,
+    createdAt: user.createdAt.toISOString(),
+  });
+});
+
+// PATCH /user/update
+router.patch("/user/update", requireAuth, async (req, res): Promise<void> => {
+  const clerkId = (req as any).auth.userId;
+  const parsed = UpdateMeBody.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
+
+  await getOrCreateUser(clerkId);
+  const [user] = await db.update(usersTable).set(parsed.data).where(eq(usersTable.clerkId, clerkId)).returning();
+  res.json({
+    id: user.id,
+    clerkId: user.clerkId,
+    displayName: user.displayName,
+    username: user.username ?? null,
     bio: user.bio ?? null,
     avatarUrl: user.avatarUrl ?? null,
     stripeCustomerId: user.stripeCustomerId ?? null,
@@ -147,16 +221,199 @@ router.get("/creators/:id", async (req, res): Promise<void> => {
     return;
   }
 
+  const [followers] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(followsTable)
+    .where(eq(followsTable.creatorClerkId, clerkId));
+
   res.json({
     clerkId,
     displayName: displayName ?? "Kreator Sineas",
     bio: user?.bio ?? null,
     avatarUrl: user?.avatarUrl ?? null,
+    bannerUrl: user?.bannerUrl ?? null,
+    createdAt: user?.createdAt?.toISOString() ?? null,
     videoCount,
     totalViews: stats?.views ?? 0,
     totalLikes: stats?.likes ?? 0,
+    followerCount: followers?.count ?? 0,
   });
 });
+
+async function followStatus(creatorClerkId: string, viewerClerkId?: string) {
+  const [followers] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(followsTable)
+    .where(eq(followsTable.creatorClerkId, creatorClerkId));
+
+  let isFollowing = false;
+  if (viewerClerkId) {
+    const [existing] = await db
+      .select({ id: followsTable.id })
+      .from(followsTable)
+      .where(and(eq(followsTable.creatorClerkId, creatorClerkId), eq(followsTable.followerClerkId, viewerClerkId)));
+    isFollowing = !!existing;
+  }
+
+  return { creatorId: creatorClerkId, followerCount: followers?.count ?? 0, isFollowing };
+}
+
+// GET /creators/:id/follow-status
+router.get("/creators/:id/follow-status", async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const creatorClerkId = decodeURIComponent(raw);
+  const viewerClerkId = (req as any).auth?.userId as string | undefined;
+  res.json(await followStatus(creatorClerkId, viewerClerkId));
+});
+
+// POST /creators/:id/follow
+router.post("/creators/:id/follow", requireAuth, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const creatorClerkId = decodeURIComponent(raw);
+  const followerClerkId = (req as any).auth.userId as string;
+
+  if (creatorClerkId === followerClerkId) {
+    res.status(400).json({ error: "Tidak bisa mengikuti diri sendiri" });
+    return;
+  }
+
+  const [existing] = await db
+    .select({ id: followsTable.id })
+    .from(followsTable)
+    .where(and(eq(followsTable.creatorClerkId, creatorClerkId), eq(followsTable.followerClerkId, followerClerkId)));
+
+  if (!existing) {
+    await db
+      .insert(followsTable)
+      .values({ creatorClerkId, followerClerkId })
+      .onConflictDoNothing();
+
+    // Create follow notification
+    try {
+      const followerUser = await getOrCreateUser(followerClerkId);
+      const followerName = followerUser?.displayName || "Seseorang";
+      await db.insert(notificationsTable).values({
+        userId: creatorClerkId,
+        senderId: followerClerkId,
+        type: "follow",
+        message: `${followerName} mulai mengikuti Anda`,
+        link: `/creator/${encodeURIComponent(followerClerkId)}`,
+        read: false,
+      });
+    } catch (e) {
+      console.error("Gagal membuat notifikasi follow:", e);
+    }
+  }
+
+  res.json(await followStatus(creatorClerkId, followerClerkId));
+});
+
+// DELETE /creators/:id/follow
+router.delete("/creators/:id/follow", requireAuth, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const creatorClerkId = decodeURIComponent(raw);
+  const followerClerkId = (req as any).auth.userId as string;
+
+  await db
+    .delete(followsTable)
+    .where(and(eq(followsTable.creatorClerkId, creatorClerkId), eq(followsTable.followerClerkId, followerClerkId)));
+
+  res.json(await followStatus(creatorClerkId, followerClerkId));
+});
+
+// ── NEW SPECIFIED ENDPOINTS: /api/follow/:creatorId ───────────────────
+// POST /api/follow/:creatorId
+router.post("/follow/:creatorId", requireAuth, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.creatorId) ? req.params.creatorId[0] : req.params.creatorId;
+  const creatorClerkId = decodeURIComponent(raw);
+  const followerClerkId = (req as any).auth.userId as string;
+
+  if (creatorClerkId === followerClerkId) {
+    res.status(400).json({ error: "Tidak bisa mengikuti diri sendiri" });
+    return;
+  }
+
+  const [existing] = await db
+    .select({ id: followsTable.id })
+    .from(followsTable)
+    .where(and(eq(followsTable.creatorClerkId, creatorClerkId), eq(followsTable.followerClerkId, followerClerkId)));
+
+  if (!existing) {
+    await db
+      .insert(followsTable)
+      .values({ creatorClerkId, followerClerkId })
+      .onConflictDoNothing();
+
+    // Create follow notification
+    try {
+      const followerUser = await getOrCreateUser(followerClerkId);
+      const followerName = followerUser?.displayName || "Seseorang";
+      await db.insert(notificationsTable).values({
+        userId: creatorClerkId,
+        senderId: followerClerkId,
+        type: "follow",
+        message: `${followerName} mulai mengikuti Anda`,
+        link: `/creator/${encodeURIComponent(followerClerkId)}`,
+        read: false,
+      });
+    } catch (e) {
+      console.error("Gagal membuat notifikasi follow:", e);
+    }
+  }
+
+  res.json(await followStatus(creatorClerkId, followerClerkId));
+});
+
+// DELETE /api/follow/:creatorId
+router.delete("/follow/:creatorId", requireAuth, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.creatorId) ? req.params.creatorId[0] : req.params.creatorId;
+  const creatorClerkId = decodeURIComponent(raw);
+  const followerClerkId = (req as any).auth.userId as string;
+
+  await db
+    .delete(followsTable)
+    .where(and(eq(followsTable.creatorClerkId, creatorClerkId), eq(followsTable.followerClerkId, followerClerkId)));
+
+  res.json(await followStatus(creatorClerkId, followerClerkId));
+});
+
+// GET /api/follow/:creatorId/status
+router.get("/follow/:creatorId/status", async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.creatorId) ? req.params.creatorId[0] : req.params.creatorId;
+  const creatorClerkId = decodeURIComponent(raw);
+  const viewerClerkId = (req as any).auth?.userId as string | undefined;
+  res.json(await followStatus(creatorClerkId, viewerClerkId));
+});
+
+// PATCH /api/user/profile
+router.patch("/user/profile", requireAuth, async (req, res): Promise<void> => {
+  const clerkId = (req as any).auth.userId;
+  const { displayName, bio, avatarUrl, bannerUrl } = req.body;
+
+  await getOrCreateUser(clerkId);
+  const [user] = await db.update(usersTable)
+    .set({
+      displayName: displayName !== undefined ? displayName : undefined,
+      bio: bio !== undefined ? bio : undefined,
+      avatarUrl: avatarUrl !== undefined ? avatarUrl : undefined,
+      bannerUrl: bannerUrl !== undefined ? bannerUrl : undefined,
+      updatedAt: new Date(),
+    })
+    .where(eq(usersTable.clerkId, clerkId))
+    .returning();
+
+  res.json({
+    id: user.id,
+    clerkId: user.clerkId,
+    displayName: user.displayName,
+    bio: user.bio ?? null,
+    avatarUrl: user.avatarUrl ?? null,
+    bannerUrl: user.bannerUrl ?? null,
+    stripeCustomerId: user.stripeCustomerId ?? null,
+    createdAt: user.createdAt.toISOString(),
+  });
+});
+// ──────────────────────────────────────────────────────────────────────
 
 export { getOrCreateUser };
 export default router;

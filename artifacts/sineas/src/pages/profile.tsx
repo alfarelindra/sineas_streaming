@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth, UserButton, useUser } from "@clerk/react";
@@ -66,7 +66,10 @@ export default function Profile() {
       <Navbar />
       <div className="pt-24 max-w-4xl mx-auto px-6 pb-16">
         <div className="flex flex-col sm:flex-row items-start gap-6 mb-10">
-          <Avatar className="w-20 h-20">
+          <Avatar className="w-20 h-20 ring-2 ring-border">
+            {clerkUser?.imageUrl && (
+              <AvatarImage src={clerkUser.imageUrl} alt={dbUser?.displayName ?? clerkUser?.fullName ?? "User"} className="object-cover" />
+            )}
             <AvatarFallback className="bg-blue-600 text-white text-2xl font-bold">
               {(dbUser?.displayName ?? clerkUser?.firstName ?? "U")[0].toUpperCase()}
             </AvatarFallback>

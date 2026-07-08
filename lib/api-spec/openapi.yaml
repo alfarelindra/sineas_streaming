@@ -466,6 +466,60 @@ paths:
         "404":
           description: Not found
 
+  /creators/{id}/follow:
+    post:
+      operationId: followCreator
+      tags: [users]
+      summary: Follow a creator
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Follow status after following
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FollowStatus"
+        "400":
+          description: Cannot follow yourself
+    delete:
+      operationId: unfollowCreator
+      tags: [users]
+      summary: Unfollow a creator
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Follow status after unfollowing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FollowStatus"
+
+  /creators/{id}/follow-status:
+    get:
+      operationId: getFollowStatus
+      tags: [users]
+      summary: Get a creator's follower count and whether the current user follows them
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Follow status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FollowStatus"
+
   # ─── Subscription ─────────────────────────────────────────────────────────
   /subscription/plans:
     get:
@@ -636,6 +690,11 @@ components:
         uploaderName: { type: string }
         uploaderId: { type: string }
         videoUrl: { type: string }
+        url_360p: { type: ["string", "null"] }
+        url_480p: { type: ["string", "null"] }
+        url_720p: { type: ["string", "null"] }
+        url_1080p: { type: ["string", "null"] }
+        url_4k: { type: ["string", "null"] }
         thumbnailUrl: { type: ["string", "null"] }
         duration: { type: integer, description: "Duration in seconds" }
         viewCount: { type: integer }
@@ -765,7 +824,9 @@ components:
       properties:
         id: { type: integer }
         videoId: { type: integer }
+        parentId: { type: ["integer", "null"] }
         authorName: { type: string }
+        authorAvatar: { type: ["string", "null"] }
         authorId: { type: string }
         body: { type: string }
         createdAt: { type: string, format: date-time }
@@ -775,10 +836,11 @@ components:
       required: [body]
       properties:
         body: { type: string, minLength: 1 }
+        parentId: { type: integer }
 
     CreatorProfile:
       type: object
-      required: [clerkId, displayName, videoCount, totalViews, totalLikes]
+      required: [clerkId, displayName, videoCount, totalViews, totalLikes, followerCount]
       properties:
         clerkId: { type: string }
         displayName: { type: string }
@@ -787,6 +849,15 @@ components:
         videoCount: { type: integer }
         totalViews: { type: integer }
         totalLikes: { type: integer }
+        followerCount: { type: integer }
+
+    FollowStatus:
+      type: object
+      required: [creatorId, followerCount, isFollowing]
+      properties:
+        creatorId: { type: string }
+        followerCount: { type: integer }
+        isFollowing: { type: boolean }
 
     # ─── Genre ───────────────────────────────────────────────────────────────
     Genre:
@@ -806,6 +877,7 @@ components:
         id: { type: integer }
         clerkId: { type: string }
         displayName: { type: string }
+        username: { type: ["string", "null"] }
         bio: { type: ["string", "null"] }
         avatarUrl: { type: ["string", "null"] }
         stripeCustomerId: { type: ["string", "null"] }
@@ -815,6 +887,7 @@ components:
       type: object
       properties:
         displayName: { type: string }
+        username: { type: string }
         bio: { type: string }
         avatarUrl: { type: string }
 

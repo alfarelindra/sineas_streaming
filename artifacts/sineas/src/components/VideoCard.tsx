@@ -48,7 +48,7 @@ export default function VideoCard({ video, variant = "default" }: VideoCardProps
   return (
     <div className="group block">
       <Link href={`/watch/${video.id}`} className="block">
-        <div className="relative overflow-hidden rounded-lg bg-gray-900 aspect-video">
+        <div className="relative overflow-hidden rounded-lg bg-muted aspect-video">
           {video.thumbnailUrl ? (
             <img
               src={video.thumbnailUrl}
@@ -56,8 +56,8 @@ export default function VideoCard({ video, variant = "default" }: VideoCardProps
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-800">
-              <Play className="w-10 h-10 text-gray-600" />
+            <div className="w-full h-full flex items-center justify-center bg-muted">
+              <Play className="w-10 h-10 text-muted-foreground" />
             </div>
           )}
 
@@ -87,7 +87,7 @@ export default function VideoCard({ video, variant = "default" }: VideoCardProps
 
           {/* Progress bar */}
           {video.progressPercent !== undefined && video.progressPercent > 0 && (
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40">
               <div
                 className="h-full bg-yellow-400"
                 style={{ width: `${Math.min(100, video.progressPercent)}%` }}

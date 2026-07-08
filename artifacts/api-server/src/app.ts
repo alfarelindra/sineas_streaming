@@ -60,6 +60,11 @@ app.post(
   }
 );
 
+// Midtrans webhook — needs parsed JSON body (not raw buffer)
+// Registered here for routing priority, actual handler is in routes/midtrans.ts
+// No special body parsing needed: Midtrans sends standard JSON
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -71,6 +76,14 @@ app.use(
     ),
   })),
 );
+
+// Resolve Clerk's legacy callable req.auth getter to its plain object value
+app.use((req, res, next) => {
+  if (typeof (req as any).auth === "function") {
+    (req as any).auth = (req as any).auth();
+  }
+  next();
+});
 
 app.use("/api", router);
 

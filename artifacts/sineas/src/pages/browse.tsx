@@ -1,4 +1,4 @@
-import { useListVideos, useListGenres } from "@workspace/api-client-react";
+import { useListVideos } from "@workspace/api-client-react";
 import Navbar from "@/components/Navbar";
 import VideoCard from "@/components/VideoCard";
 import { useState, useEffect } from "react";
@@ -8,13 +8,15 @@ import { Input } from "@/components/ui/input";
 import { Search, Filter } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+const genres = ['Semua', 'Drama', 'Aksi', 'Komedi', 'Horor', 'Dokumenter', 'Animasi', 'Thriller', 'Romantis'];
+
 export default function Browse() {
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
   const [, setLocation] = useLocation();
 
   const [search, setSearch] = useState(params.get("q") ?? "");
-  const [genre, setGenre] = useState(params.get("genre") ?? "");
+  const [selectedGenre, setSelectedGenre] = useState(params.get("genre") || "Semua");
   const [page, setPage] = useState(1);
   const limit = 24;
 
@@ -23,10 +25,9 @@ export default function Browse() {
     setSearch(q);
   }, [searchString]);
 
-  const { data: genresData } = useListGenres();
   const { data, isLoading } = useListVideos({
     search: search || undefined,
-    genre: genre || undefined,
+    genre: selectedGenre === "Semua" ? undefined : selectedGenre,
     page,
     limit,
   });
@@ -38,7 +39,16 @@ export default function Browse() {
     setPage(1);
     const sp = new URLSearchParams();
     if (q) sp.set("q", q);
-    if (genre) sp.set("genre", genre);
+    if (selectedGenre !== "Semua") sp.set("genre", selectedGenre);
+    setLocation(`/browse?${sp.toString()}`);
+  };
+
+  const handleGenreSelect = (genreName: string) => {
+    setSelectedGenre(genreName);
+    setPage(1);
+    const sp = new URLSearchParams();
+    if (search) sp.set("q", search);
+    if (genreName !== "Semua") sp.set("genre", genreName);
     setLocation(`/browse?${sp.toString()}`);
   };
 
@@ -49,8 +59,8 @@ export default function Browse() {
         <h1 className="text-3xl font-black mb-6">Jelajahi</h1>
 
         {/* Filters */}
-        <div className="flex flex-wrap gap-3 mb-8">
-          <div className="relative flex-1 min-w-[200px] max-w-sm">
+        <div className="flex flex-col gap-4 mb-8">
+          <div className="relative w-full max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               value={search}
@@ -60,29 +70,28 @@ export default function Browse() {
               }}
               onKeyDown={(e) => e.key === "Enter" && handleSearch(search)}
               placeholder="Cari judul, kreator..."
-              className="pl-9 bg-card border-border text-foreground placeholder:text-muted-foreground"
+              className="pl-9 bg-card border-border text-foreground placeholder:text-muted-foreground w-full"
             />
           </div>
 
-          <div className="flex flex-wrap gap-2 items-center">
-            <Badge
-              variant={!genre ? "default" : "outline"}
-              className={`cursor-pointer text-sm px-3 py-1.5 ${!genre ? "bg-blue-600 hover:bg-blue-700 text-white border-0" : "border-border text-muted-foreground hover:text-foreground"}`}
-              onClick={() => { setGenre(""); setPage(1); }}
-            >
-              Semua
-            </Badge>
-            {(genresData ?? []).map((g: any) => (
-              <Badge
-                key={g.slug}
-                variant={genre === g.name ? "default" : "outline"}
-                className={`cursor-pointer text-sm px-3 py-1.5 ${genre === g.name ? "bg-blue-600 hover:bg-blue-700 text-white border-0" : "border-border text-muted-foreground hover:text-foreground"}`}
-                onClick={() => { setGenre(genre === g.name ? "" : g.name); setPage(1); }}
-              >
-                {g.name}
-                {g.videoCount > 0 && <span className="ml-1 text-xs opacity-60">({g.videoCount})</span>}
-              </Badge>
-            ))}
+          {/* Genre Filter Bar */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2">
+            {genres.map((g) => {
+              const isActive = selectedGenre === g;
+              return (
+                <button
+                  key={g}
+                  onClick={() => handleGenreSelect(g)}
+                  className={`cursor-pointer text-xs sm:text-sm px-4 py-2 rounded-full font-semibold transition-all shrink-0 select-none ${
+                    isActive
+                      ? "bg-blue-600 text-white shadow-lg shadow-blue-600/10"
+                      : "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white"
+                  }`}
+                >
+                  {g}
+                </button>
+              );
+            })}
           </div>
         </div>
 

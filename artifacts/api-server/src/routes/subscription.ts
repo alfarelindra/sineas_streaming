@@ -95,6 +95,27 @@ router.get("/subscription/status", requireAuth, async (req, res): Promise<void> 
   const clerkId = (req as any).auth.userId;
   const [user] = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
 
+  // ── Primary: check Midtrans subscription fields ──────────────────────────
+  if (user?.subscriptionTier && user?.subscriptionStatus) {
+    const now = new Date();
+    const expiredAt = user.subscriptionExpiredAt;
+    // Auto-expire if past expiry date
+    const isActive = user.subscriptionStatus === "active" && (!expiredAt || expiredAt > now);
+
+    if (isActive) {
+      res.json({
+        isSubscribed: true,
+        plan: user.subscriptionTier,
+        status: "active",
+        currentPeriodEnd: expiredAt?.toISOString() ?? null,
+        cancelAtPeriodEnd: false,
+        provider: "midtrans",
+      });
+      return;
+    }
+  }
+
+  // ── Fallback: check Stripe subscription ──────────────────────────────────
   if (!user?.stripeCustomerId || !user?.stripeSubscriptionId) {
     res.json({ isSubscribed: false, plan: null, status: null, currentPeriodEnd: null, cancelAtPeriodEnd: false });
     return;
@@ -113,6 +134,7 @@ router.get("/subscription/status", requireAuth, async (req, res): Promise<void> 
       status: subscription.status,
       currentPeriodEnd: new Date((subscription as any).current_period_end * 1000).toISOString(),
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      provider: "stripe",
     });
   } catch (err) {
     logger.warn({ err }, "Failed to fetch subscription from Stripe");

@@ -2,40 +2,15 @@ import { useState, useEffect, useRef } from "react";
 import { Bell } from "lucide-react";
 import { useAuth } from "@clerk/react";
 import { Link } from "wouter";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface Notification {
   id: string;
-  type: "comment" | "like" | "system";
+  type: "comment" | "like" | "system" | "follow";
   message: string;
   time: string;
   read: boolean;
   link?: string;
-}
-
-const STORAGE_KEY = "sineas-notifications";
-
-function getNotifications(): Notification[] {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
-  } catch {
-    return [];
-  }
-}
-
-function saveNotifications(notifs: Notification[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(notifs));
-}
-
-export function addNotification(notif: Omit<Notification, "id" | "read" | "time">) {
-  const notifs = getNotifications();
-  notifs.unshift({
-    ...notif,
-    id: Date.now().toString(),
-    read: false,
-    time: new Date().toISOString(),
-  });
-  saveNotifications(notifs.slice(0, 20));
-  window.dispatchEvent(new Event("sineas-notification"));
 }
 
 function formatTime(iso: string) {
@@ -49,18 +24,58 @@ function formatTime(iso: string) {
 }
 
 export default function NotificationBell({ overDark = true }: { overDark?: boolean }) {
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, getToken } = useAuth();
   const [open, setOpen] = useState(false);
-  const [notifs, setNotifs] = useState<Notification[]>([]);
   const ref = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
 
-  const refresh = () => setNotifs(getNotifications());
+  const { data: notifs = [], refetch } = useQuery<Notification[]>({
+    queryKey: ["/api/notifications"],
+    queryFn: async () => {
+      if (!isSignedIn) return [];
+      const token = await getToken();
+      const headers: HeadersInit = { Accept: "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const res = await fetch("/api/notifications", { headers });
+      if (!res.ok) throw new Error("Gagal mengambil notifikasi");
+      return res.json();
+    },
+    enabled: !!isSignedIn,
+    refetchInterval: 15000, // Poll every 15s to keep notifications fresh
+  });
 
-  useEffect(() => {
-    refresh();
-    window.addEventListener("sineas-notification", refresh);
-    return () => window.removeEventListener("sineas-notification", refresh);
-  }, []);
+  const markAllReadMutation = useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      const headers: HeadersInit = { Accept: "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const res = await fetch("/api/notifications/read-all", {
+        method: "POST",
+        headers,
+      });
+      if (!res.ok) throw new Error("Gagal menandai semua dibaca");
+      return res.json();
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["/api/notifications"] });
+      const previousNotifs = queryClient.getQueryData<Notification[]>(["/api/notifications"]);
+      if (previousNotifs) {
+        queryClient.setQueryData<Notification[]>(
+          ["/api/notifications"],
+          previousNotifs.map((n) => ({ ...n, read: true }))
+        );
+      }
+      return { previousNotifs };
+    },
+    onError: (err, newTodo, context) => {
+      if (context?.previousNotifs) {
+        queryClient.setQueryData(["/api/notifications"], context.previousNotifs);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+    },
+  });
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -70,10 +85,12 @@ export default function NotificationBell({ overDark = true }: { overDark?: boole
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const markAllRead = () => {
-    const updated = notifs.map(n => ({ ...n, read: true }));
-    saveNotifications(updated);
-    setNotifs(updated);
+  const handleOpenToggle = () => {
+    const nextOpen = !open;
+    setOpen(nextOpen);
+    if (nextOpen) {
+      refetch();
+    }
   };
 
   const unread = notifs.filter(n => !n.read).length;
@@ -83,7 +100,7 @@ export default function NotificationBell({ overDark = true }: { overDark?: boole
   return (
     <div ref={ref} className="relative">
       <button
-        onClick={() => { setOpen(!open); if (!open) refresh(); }}
+        onClick={handleOpenToggle}
         className={`relative p-2 transition-colors ${overDark ? "text-gray-300 hover:text-white" : "text-gray-600 hover:text-gray-900"}`}
       >
         <Bell className="w-5 h-5" />
@@ -99,7 +116,11 @@ export default function NotificationBell({ overDark = true }: { overDark?: boole
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <h3 className="font-bold text-popover-foreground text-sm">Notifikasi</h3>
             {unread > 0 && (
-              <button onClick={markAllRead} className="text-xs text-yellow-400 hover:text-yellow-300 transition-colors">
+              <button
+                onClick={() => markAllReadMutation.mutate()}
+                disabled={markAllReadMutation.isPending}
+                className="text-xs text-yellow-400 hover:text-yellow-300 transition-colors disabled:opacity-50"
+              >
                 Tandai semua dibaca
               </button>
             )}

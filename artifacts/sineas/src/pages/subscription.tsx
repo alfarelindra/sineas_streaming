@@ -1,11 +1,12 @@
-import { useListPlans, useGetSubscriptionStatus, useCreateCheckout, useCreatePortal } from "@workspace/api-client-react";
+import { useListPlans, useGetSubscriptionStatus } from "@workspace/api-client-react";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Zap, Star, Sparkles } from "lucide-react";
+import { Check, Crown, Zap, Star, Sparkles, ShieldCheck } from "lucide-react";
 import { useAuth } from "@clerk/react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { useState, useCallback } from "react";
 
 function formatIDR(amount: number) {
   return new Intl.NumberFormat("id-ID", {
@@ -36,47 +37,87 @@ const PLAN_BUTTON: Record<string, string> = {
 
 const POPULAR_PLAN = "premium";
 
+/** Dynamically load Midtrans Snap.js from CDN */
+function loadSnapScript(clientKey: string, isProduction: boolean): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const existingScript = document.getElementById("midtrans-snap-script");
+    if (existingScript) { resolve(); return; }
+    const script = document.createElement("script");
+    script.id = "midtrans-snap-script";
+    script.src = isProduction
+      ? "https://app.midtrans.com/snap/snap.js"
+      : "https://app.sandbox.midtrans.com/snap/snap.js";
+    script.setAttribute("data-client-key", clientKey);
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Gagal memuat Midtrans Snap.js"));
+    document.head.appendChild(script);
+  });
+}
+
 export default function Subscription() {
   const { isSignedIn } = useAuth();
   const { toast } = useToast();
+  const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
 
   const { data: plans, isLoading: loadingPlans } = useListPlans();
-  const { data: status } = useGetSubscriptionStatus();
-  const createCheckout = useCreateCheckout();
-  const createPortal = useCreatePortal();
+  const { data: status, refetch: refetchStatus } = useGetSubscriptionStatus();
 
-  const handleSubscribe = (priceId: string) => {
+  const handleSubscribe = useCallback(async (planId: string) => {
     if (!isSignedIn) {
       toast({ title: "Masuk terlebih dahulu", description: "Silakan masuk untuk berlangganan", variant: "destructive" });
       return;
     }
-    createCheckout.mutate(
-      { data: { priceId } },
-      {
-        onSuccess: (data: any) => {
-          if (data.url) window.location.href = data.url;
+
+    setLoadingPlanId(planId);
+
+    try {
+      // Step 1: Create Snap transaction on our server
+      const base = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
+      const res = await fetch(`${base}/api/midtrans/checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ planId }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Midtrans belum dikonfigurasi" }));
+        toast({
+          title: "Pembayaran Tidak Tersedia",
+          description: err.error ?? "Pastikan MIDTRANS_SERVER_KEY sudah diset di environment variables.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { snapToken, clientKey, isProduction } = await res.json();
+
+      // Step 2: Load Snap.js SDK dynamically
+      await loadSnapScript(clientKey, isProduction);
+
+      // Step 3: Open Snap payment popup
+      (window as any).snap.pay(snapToken, {
+        onSuccess: () => {
+          toast({ title: "Pembayaran Berhasil! 🎉", description: "Langganan kamu sekarang aktif." });
+          refetchStatus();
+        },
+        onPending: () => {
+          toast({ title: "Menunggu Pembayaran", description: "Selesaikan pembayaran untuk mengaktifkan langganan." });
         },
         onError: (err: any) => {
-          toast({
-            title: "Stripe belum tersambung",
-            description: "Hubungkan Stripe di Integrations untuk mengaktifkan pembayaran.",
-            variant: "destructive",
-          });
+          console.error("Snap payment error:", err);
+          toast({ title: "Pembayaran Gagal", description: "Terjadi kesalahan. Silakan coba lagi.", variant: "destructive" });
         },
-      }
-    );
-  };
-
-  const handlePortal = () => {
-    createPortal.mutate(undefined as any, {
-      onSuccess: (data: any) => {
-        if (data.url) window.location.href = data.url;
-      },
-      onError: () => {
-        toast({ title: "Gagal membuka portal", variant: "destructive" });
-      },
-    });
-  };
+        onClose: () => {
+          // User closed the popup without paying
+        },
+      });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message ?? "Terjadi kesalahan", variant: "destructive" });
+    } finally {
+      setLoadingPlanId(null);
+    }
+  }, [isSignedIn, toast, refetchStatus]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -93,7 +134,7 @@ export default function Subscription() {
             <span className="text-yellow-400">Tanpa Batas</span>
           </h1>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            Pilih paket yang sesuai untukmu. Batalkan kapan saja.
+            Pilih paket yang sesuai untukmu. Bayar mudah via Midtrans.
           </p>
         </div>
 
@@ -110,15 +151,6 @@ export default function Subscription() {
                 Aktif hingga {new Date(status.currentPeriodEnd).toLocaleDateString("id-ID", { year: "numeric", month: "long", day: "numeric" })}
               </p>
             )}
-            <Button
-              onClick={handlePortal}
-              variant="outline"
-              size="sm"
-              className="mt-4 border-green-500/50 text-green-400 hover:bg-green-500/10"
-              disabled={createPortal.isPending}
-            >
-              Kelola Langganan
-            </Button>
           </div>
         )}
 
@@ -136,6 +168,8 @@ export default function Subscription() {
               const isCurrentPlan = status?.plan === plan.tier || status?.plan === plan.id;
               const colorClass = PLAN_COLORS[plan.tier ?? plan.id] ?? PLAN_COLORS.basic;
               const btnClass = PLAN_BUTTON[plan.tier ?? plan.id] ?? "bg-blue-600 hover:bg-blue-700";
+              const thisPlanId = plan.tier ?? plan.id;
+              const isLoadingThis = loadingPlanId === thisPlanId;
 
               return (
                 <div
@@ -185,11 +219,11 @@ export default function Subscription() {
                   </ul>
 
                   <Button
-                    onClick={() => handleSubscribe(plan.priceId)}
-                    disabled={isCurrentPlan || createCheckout.isPending}
+                    onClick={() => handleSubscribe(thisPlanId)}
+                    disabled={isCurrentPlan || isLoadingThis || loadingPlanId !== null}
                     className={`w-full font-bold ${isCurrentPlan ? "bg-muted text-muted-foreground cursor-not-allowed" : btnClass}`}
                   >
-                    {isCurrentPlan ? "Paket Saat Ini" : `Pilih ${plan.name}`}
+                    {isCurrentPlan ? "Paket Saat Ini" : isLoadingThis ? "Memuat..." : `Pilih ${plan.name}`}
                   </Button>
                 </div>
               );
@@ -197,12 +231,15 @@ export default function Subscription() {
           </div>
         )}
 
-        {/* FAQ / Notes */}
-        <div className="mt-16 max-w-2xl mx-auto text-center">
-          <p className="text-sm text-muted-foreground">
-            Pembayaran melalui Stripe. Semua harga dalam Rupiah Indonesia.
+        {/* Midtrans badge + notes */}
+        <div className="mt-16 max-w-2xl mx-auto text-center space-y-4">
+          <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm">
+            <ShieldCheck className="w-4 h-4 text-blue-400" />
+            <span>Pembayaran aman melalui <span className="text-blue-400 font-semibold">Midtrans</span>. Semua harga dalam Rupiah Indonesia.</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
             Dengan berlangganan, kamu setuju dengan{" "}
-            <span className="text-yellow-400 cursor-pointer">Syarat & Ketentuan</span> Sineas.
+            <span className="text-yellow-400 cursor-pointer">Syarat &amp; Ketentuan</span> Sineas.
           </p>
           {!isSignedIn && (
             <div className="mt-6">
@@ -218,3 +255,4 @@ export default function Subscription() {
     </div>
   );
 }
+

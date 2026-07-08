@@ -1,6 +1,8 @@
 import { Storage, File } from "@google-cloud/storage";
 import { Readable } from "stream";
 import { randomUUID } from "crypto";
+import path from "node:path";
+import fs from "node:fs";
 import {
   ObjectAclPolicy,
   ObjectPermission,
@@ -36,11 +38,23 @@ export class ObjectNotFoundError extends Error {
     Object.setPrototypeOf(this, ObjectNotFoundError.prototype);
   }
 }
-
 export class ObjectStorageService {
   constructor() {}
 
+  isLocal(): boolean {
+    return !process.env.PRIVATE_OBJECT_DIR;
+  }
+
+  getLocalDir(): string {
+    const localDir = path.resolve(process.cwd(), "local-storage");
+    if (!fs.existsSync(localDir)) {
+      fs.mkdirSync(localDir, { recursive: true });
+    }
+    return localDir;
+  }
+
   getPublicObjectSearchPaths(): Array<string> {
+    if (this.isLocal()) return [this.getLocalDir()];
     const pathsStr = process.env.PUBLIC_OBJECT_SEARCH_PATHS || "";
     const paths = Array.from(
       new Set(
@@ -60,6 +74,7 @@ export class ObjectStorageService {
   }
 
   getPrivateObjectDir(): string {
+    if (this.isLocal()) return this.getLocalDir();
     const dir = process.env.PRIVATE_OBJECT_DIR || "";
     if (!dir) {
       throw new Error(
@@ -71,6 +86,13 @@ export class ObjectStorageService {
   }
 
   async searchPublicObject(filePath: string): Promise<File | null> {
+    if (this.isLocal()) {
+      const fullPath = path.resolve(this.getLocalDir(), filePath);
+      if (fs.existsSync(fullPath)) {
+        return { name: filePath } as any;
+      }
+      return null;
+    }
     for (const searchPath of this.getPublicObjectSearchPaths()) {
       const fullPath = `${searchPath}/${filePath}`;
 
@@ -88,6 +110,14 @@ export class ObjectStorageService {
   }
 
   async downloadObject(file: File, cacheTtlSec: number = 3600): Promise<Response> {
+    if (this.isLocal()) {
+      const filePath = path.resolve(this.getLocalDir(), file.name);
+      const nodeStream = fs.createReadStream(filePath);
+      const webStream = Readable.toWeb(nodeStream) as ReadableStream;
+      return new Response(webStream, {
+        headers: { "Content-Type": "application/octet-stream" }
+      });
+    }
     const [metadata] = await file.getMetadata();
     const aclPolicy = await getObjectAclPolicy(file);
     const isPublic = aclPolicy?.visibility === "public";
@@ -107,6 +137,10 @@ export class ObjectStorageService {
   }
 
   async getObjectEntityUploadURL(): Promise<string> {
+    if (this.isLocal()) {
+      const objectId = randomUUID();
+      return `/api/storage/local-upload?id=${objectId}`;
+    }
     const privateObjectDir = this.getPrivateObjectDir();
     if (!privateObjectDir) {
       throw new Error(
@@ -129,6 +163,21 @@ export class ObjectStorageService {
   }
 
   async getObjectEntityFile(objectPath: string): Promise<File> {
+    if (this.isLocal()) {
+      if (!objectPath.startsWith("/objects/")) {
+        throw new ObjectNotFoundError();
+      }
+      const parts = objectPath.slice(1).split("/");
+      if (parts.length < 2) {
+        throw new ObjectNotFoundError();
+      }
+      const entityId = parts.slice(1).join("/");
+      const fullPath = path.resolve(this.getLocalDir(), entityId);
+      if (!fs.existsSync(fullPath)) {
+        throw new ObjectNotFoundError();
+      }
+      return { name: entityId } as any;
+    }
     if (!objectPath.startsWith("/objects/")) {
       throw new ObjectNotFoundError();
     }
@@ -155,6 +204,14 @@ export class ObjectStorageService {
   }
 
   normalizeObjectEntityPath(rawPath: string): string {
+    if (this.isLocal()) {
+      if (rawPath.includes("/api/storage/local-upload?id=")) {
+        const id = rawPath.split("?id=")[1];
+        // Use /api/storage/objects/ path so Vite dev-server proxy forwards it to the API server
+        return `/api/storage/objects/uploads/${id}`;
+      }
+      return rawPath;
+    }
     if (!rawPath.startsWith("https://storage.googleapis.com/")) {
       return rawPath;
     }
@@ -180,6 +237,9 @@ export class ObjectStorageService {
     aclPolicy: ObjectAclPolicy
   ): Promise<string> {
     const normalizedPath = this.normalizeObjectEntityPath(rawPath);
+    if (this.isLocal()) {
+      return normalizedPath;
+    }
     if (!normalizedPath.startsWith("/")) {
       return normalizedPath;
     }
@@ -198,6 +258,9 @@ export class ObjectStorageService {
     objectFile: File;
     requestedPermission?: ObjectPermission;
   }): Promise<boolean> {
+    if (this.isLocal()) {
+      return true;
+    }
     return canAccessObject({
       userId,
       objectFile,

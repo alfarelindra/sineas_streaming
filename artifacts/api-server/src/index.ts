@@ -1,5 +1,7 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { createServer } from "http";
+import { Server } from "socket.io";
 
 const rawPort = process.env["PORT"];
 
@@ -35,7 +37,61 @@ async function initStripe() {
   }
 }
 
-app.listen(port, async (err) => {
+// Create HTTP server wrapping the Express app
+const httpServer = createServer(app);
+
+// Initialize Socket.io
+const io = new Server(httpServer, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+
+io.on("connection", (socket) => {
+  logger.info({ socketId: socket.id }, "Client connected to WebSocket");
+
+  // Broadcast current global active users count to all clients
+  io.emit("global-active-count", io.engine.clientsCount);
+
+  // Handle joining specific video watch room
+  socket.on("join-video-room", (videoId: string) => {
+    // Leave previous room if any
+    const prevRoom = (socket as any).currentVideoRoom;
+    if (prevRoom) {
+      socket.leave(prevRoom);
+      const prevSize = io.sockets.adapter.rooms.get(prevRoom)?.size ?? 0;
+      io.to(prevRoom).emit("video-room-count", { videoId: prevRoom, count: prevSize });
+    }
+
+    // Join new room
+    socket.join(videoId);
+    (socket as any).currentVideoRoom = videoId;
+    
+    // Get room size and broadcast
+    const size = io.sockets.adapter.rooms.get(videoId)?.size ?? 0;
+    io.to(videoId).emit("video-room-count", { videoId, count: size });
+    logger.info({ socketId: socket.id, videoId, size }, "Client joined video watch room");
+  });
+
+  socket.on("disconnecting", () => {
+    // Notify rooms the client is leaving
+    for (const room of socket.rooms) {
+      if (room !== socket.id) {
+        const size = io.sockets.adapter.rooms.get(room)?.size ?? 0;
+        io.to(room).emit("video-room-count", { videoId: room, count: Math.max(0, size - 1) });
+      }
+    }
+  });
+
+  socket.on("disconnect", () => {
+    // Broadcast updated global active users count
+    io.emit("global-active-count", io.engine.clientsCount);
+    logger.info({ socketId: socket.id }, "Client disconnected from WebSocket");
+  });
+});
+
+httpServer.listen(port, async (err?: any) => {
   if (err) {
     logger.error({ err }, "Error listening on port");
     process.exit(1);

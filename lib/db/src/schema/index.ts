@@ -5,3 +5,5 @@ export * from "./watchlist";
 export * from "./watch_progress";
 export * from "./likes";
 export * from "./comments";
+export * from "./follows";
+export * from "./notifications";
