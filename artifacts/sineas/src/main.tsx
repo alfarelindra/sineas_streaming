@@ -38,7 +38,7 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     headers.set("ngrok-skip-browser-warning", "true");
   }
 
-  if (url.includes("ngrok-free.app") || (apiUrl && apiUrl.includes("ngrok-free.app") && isApi)) {
+  if (url.includes("ngrok-free") || (apiUrl && apiUrl.includes("ngrok-free") && isApi)) {
     headers.set("ngrok-skip-browser-warning", "true");
   }
 

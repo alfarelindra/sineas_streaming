@@ -44,10 +44,9 @@ app.use(
         callback(null, true);
         return;
       }
-      // Dynamically accept localhost, Ngrok tunnels, and Vercel domains
       const isAllowed =
         origin.startsWith("http://localhost:") ||
-        origin.endsWith(".ngrok-free.app") ||
+        origin.includes("ngrok-free") ||
         origin.endsWith(".vercel.app") ||
         origin.includes("sineas-streaming");
 
