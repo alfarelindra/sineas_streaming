@@ -4,10 +4,6 @@
 node_modules
 **/node_modules
 
-# Ignore backend and mockup sandbox (only frontend is deployed)
-artifacts/api-server
-artifacts/mockup-sandbox
-
 # Ignore local files and directories
 local-storage
 **/local-storage
