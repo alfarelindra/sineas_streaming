@@ -56,3 +56,5 @@ Thumbs.db
 local-storage/
 local-storage
 **/local-storage/
+
+.vercel

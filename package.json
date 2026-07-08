@@ -10,13 +10,15 @@
     "dev:pipeline": "node tunnel.js"
   },
   "private": true,
+  "packageManager": "pnpm@11.1.2",
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild",
       "@rollup/rollup-win32-x64-msvc",
       "rollup",
       "@tailwindcss/oxide-win32-x64-msvc",
-      "lightningcss-win32-x64-msvc"
+      "lightningcss-win32-x64-msvc",
+      "ngrok"
     ]
   },
   "devDependencies": {

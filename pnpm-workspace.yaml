@@ -73,6 +73,7 @@ onlyBuiltDependencies:
   - esbuild
   - msw
   - unrs-resolver
+  - ngrok
 
 overrides:
   # replit uses linux-x64 only, we can exclude all other platforms
@@ -161,3 +162,4 @@ overrides:
 
 allowBuilds:
   esbuild: set this to true or false
+  ngrok: true
