@@ -30,7 +30,7 @@ function updateVercelEnvironment(apiUrl) {
 
     // Add new env var
     console.log(`Adding new VITE_API_URL = ${apiUrl}...`);
-    runCommand(`vercel env add VITE_API_URL production "${apiUrl}" --non-interactive --yes`);
+    runCommand(`vercel env add VITE_API_URL production --value "${apiUrl}" --yes --non-interactive`);
     console.log("Environment variable successfully updated!");
 
     // Redeploy to Vercel
