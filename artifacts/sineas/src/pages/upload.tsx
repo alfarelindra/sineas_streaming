@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { Upload as UploadIcon, Film, Image, CheckCircle2, AlertCircle, Link as LinkIcon, Play, Crown, Users, Info } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
 
 const GENRES = ["Drama", "Aksi", "Komedi", "Horor", "Dokumenter", "Animasi", "Thriller", "Romantis"];
 
@@ -19,45 +20,31 @@ type UploadStep = "form" | "uploading" | "done" | "error";
 
 async function uploadFile(file: File, onProgress?: (pct: number) => void): Promise<string> {
   const filePath = `uploads/${Date.now()}_${file.name}`;
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://rvnfudoqiseujbwzjqfo.supabase.co";
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2bmZ1ZG9xaXNldWpid3pqcWZvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MzU0NjMzMSwiZXhwIjoyMDk5MTIyMzMxfQ.V1GcwL-IoN6Y0DaUYiKOnAHD6BBoNO7WtJ-dUHCRA-U";
-
-  const uploadUrl = `${supabaseUrl.replace(/\/+$/, "")}/storage/v1/object/sineas-videos/${filePath}`;
-
-  return new Promise<string>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", uploadUrl);
-    xhr.setRequestHeader("Authorization", `Bearer ${supabaseKey}`);
-    xhr.setRequestHeader("apiKey", supabaseKey);
-    xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-
-    if (onProgress) {
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const pct = Math.round((event.loaded / event.total) * 100);
+  const { data, error } = await supabase.storage
+    .from("sineas-videos")
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: false,
+      onUploadProgress: (progressEvent: any) => {
+        if (onProgress && progressEvent.total) {
+          const pct = Math.round((progressEvent.loaded / progressEvent.total) * 100);
           onProgress(pct);
         }
-      };
-    }
-
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        const publicUrl = `${supabaseUrl.replace(/\/+$/, "")}/storage/v1/object/public/sineas-videos/${filePath}`;
-        resolve(publicUrl);
-      } else {
-        try {
-          const res = JSON.parse(xhr.responseText);
-          reject(new Error(`Gagal mengunggah file: ${res.error || res.message || xhr.statusText}`));
-        } catch {
-          reject(new Error(`Gagal mengunggah file: HTTP ${xhr.status} ${xhr.statusText}`));
-        }
       }
-    };
+    } as any);
 
-    xhr.onerror = () => reject(new Error("Koneksi jaringan terputus saat mengunggah"));
-    xhr.send(file);
-  });
+  if (error) {
+    console.error("Direct upload SDK error:", error);
+    throw new Error(`Gagal mengunggah file: ${error.message}`);
+  }
+
+  const { data: { publicUrl } } = supabase.storage
+    .from("sineas-videos")
+    .getPublicUrl(data.path);
+
+  return publicUrl;
 }
+
 
 
 export default function UploadPage() {
