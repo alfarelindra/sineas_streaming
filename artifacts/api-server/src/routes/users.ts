@@ -193,7 +193,15 @@ router.get("/creators/:id", async (req, res): Promise<void> => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const clerkId = decodeURIComponent(raw);
 
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
+  let [user] = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
+
+  if (!user && clerkId.startsWith("user_")) {
+    try {
+      user = await getOrCreateUser(clerkId);
+    } catch (err) {
+      console.error("Gagal melakukan auto-create user dari Clerk di route /creators/:id:", err);
+    }
+  }
 
   const [stats] = await db
     .select({
