@@ -18,26 +18,18 @@ const GENRES = ["Drama", "Aksi", "Komedi", "Horor", "Dokumenter", "Animasi", "Th
 type UploadStep = "form" | "uploading" | "done" | "error";
 
 async function uploadFile(file: File, onProgress?: (pct: number) => void): Promise<string> {
-  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-  const res = await fetch(`${base}/api/storage/uploads/request-url`, {
-    method: "POST",
-    headers: { 
-      "Content-Type": "application/json",
-      "ngrok-skip-browser-warning": "true"
-    },
-    body: JSON.stringify({ filename: file.name, contentType: file.type }),
-  });
-  if (!res.ok) throw new Error("Gagal mendapatkan URL upload");
-  const { uploadUrl, objectPath } = await res.json();
+  const filePath = `uploads/${Date.now()}_${file.name}`;
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://rvnfudoqiseujbwzjqfo.supabase.co";
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2bmZ1ZG9xaXNldWpid3pqcWZvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MzU0NjMzMSwiZXhwIjoyMDk5MTIyMzMxfQ.V1GcwL-IoN6Y0DaUYiKOnAHD6BBoNO7WtJ-dUHCRA-U";
+
+  const uploadUrl = `${supabaseUrl.replace(/\/+$/, "")}/storage/v1/object/sineas-videos/${filePath}`;
 
   return new Promise<string>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open("PUT", uploadUrl);
-    xhr.setRequestHeader("Content-Type", file.type);
-    
-    if (uploadUrl.startsWith("/") || uploadUrl.includes(window.location.hostname)) {
-      xhr.setRequestHeader("ngrok-skip-browser-warning", "true");
-    }
+    xhr.open("POST", uploadUrl);
+    xhr.setRequestHeader("Authorization", `Bearer ${supabaseKey}`);
+    xhr.setRequestHeader("apiKey", supabaseKey);
+    xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
 
     if (onProgress) {
       xhr.upload.onprogress = (event) => {
@@ -50,9 +42,15 @@ async function uploadFile(file: File, onProgress?: (pct: number) => void): Promi
 
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
-        resolve(objectPath);
+        const publicUrl = `${supabaseUrl.replace(/\/+$/, "")}/storage/v1/object/public/sineas-videos/${filePath}`;
+        resolve(publicUrl);
       } else {
-        reject(new Error(`Gagal mengunggah file: ${xhr.statusText || xhr.status}`));
+        try {
+          const res = JSON.parse(xhr.responseText);
+          reject(new Error(`Gagal mengunggah file: ${res.error || res.message || xhr.statusText}`));
+        } catch {
+          reject(new Error(`Gagal mengunggah file: HTTP ${xhr.status} ${xhr.statusText}`));
+        }
       }
     };
 
@@ -60,6 +58,7 @@ async function uploadFile(file: File, onProgress?: (pct: number) => void): Promi
     xhr.send(file);
   });
 }
+
 
 export default function UploadPage() {
   const [, setLocation] = useLocation();
@@ -93,11 +92,11 @@ export default function UploadPage() {
 
   const handleVideoFile = (f: File | null) => {
     if (!f) return;
-    const MAX_SIZE = 100 * 1024 * 1024; // 100MB limit for dev
+    const MAX_SIZE = 5 * 1024 * 1024 * 1024; // 5GB limit for large indie movies
     if (f.size > MAX_SIZE) {
       toast({
         title: "File Terlalu Besar",
-        description: "Ukuran video maksimal adalah 100MB selama masa pengembangan.",
+        description: "Ukuran video maksimal adalah 5GB.",
         variant: "destructive"
       });
       if (videoInputRef.current) videoInputRef.current.value = "";
@@ -343,7 +342,7 @@ export default function UploadPage() {
                   ) : (
                     <div>
                       <p className="text-sm text-muted-foreground">Klik untuk pilih file video</p>
-                      <p className="text-xs text-muted-foreground mt-1">MP4, WebM, MOV — maks 2GB</p>
+                      <p className="text-xs text-muted-foreground mt-1">MP4, WebM, MOV — maks 5GB</p>
                     </div>
                   )}
                 </div>

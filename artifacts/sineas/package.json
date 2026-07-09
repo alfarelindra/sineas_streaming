@@ -76,6 +76,7 @@
   },
   "dependencies": {
     "@clerk/react": "^6.7.3",
+    "@supabase/supabase-js": "^2.110.1",
     "socket.io-client": "^4.8.3"
   }
 }
