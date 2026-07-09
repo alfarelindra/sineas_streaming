@@ -53,7 +53,10 @@ async function getOrCreateUser(clerkId: string, displayName?: string) {
 
   // Step 3: Try to enrich with real Clerk profile data
   const baseUser = created ?? (await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId)).then(r => r[0]));
-  if (!baseUser) return null; // shouldn't happen
+  if (!baseUser) {
+    throw new Error("Gagal membuat data user di database");
+  }
+
 
   try {
     const clerkUser = await clerkClient.users.getUser(clerkId);
