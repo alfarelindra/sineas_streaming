@@ -30,16 +30,19 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 
 /**
- * Resolve a video/thumbnail URL so the browser can always load it.
- * Paths stored as relative `/api/storage/objects/...` are served by the
- * Express API and proxied through Vite in development — they are valid
- * as-is when loaded from the same origin.  Absolute https:// URLs are
- * returned unchanged.
+ * Check if the video URL is from an external embeddable provider like Google Drive or YouTube.
  */
-function resolveMediaUrl(url: string | null | undefined): string | undefined {
-  if (!url) return undefined;
+function isIframeVideo(url: string | null | undefined): boolean {
+  if (!url) return false;
+  return url.includes("drive.google.com") || url.includes("youtube.com") || url.includes("youtu.be");
+}
 
-  // Auto-convert Google Drive sharing link to a direct stream/download source
+/**
+ * Convert a sharing URL into an official embed URL (iframe src).
+ */
+function getEmbedUrl(url: string | null | undefined): string {
+  if (!url) return "";
+
   if (url.includes("drive.google.com")) {
     let fileId = "";
     if (url.includes("/file/d/")) {
@@ -54,10 +57,45 @@ function resolveMediaUrl(url: string | null | undefined): string | undefined {
       }
     }
     if (fileId) {
-      return `https://docs.google.com/uc?export=download&id=${fileId}`;
+      return `https://drive.google.com/file/d/${fileId}/preview`;
     }
   }
 
+  if (url.includes("youtube.com") || url.includes("youtu.be")) {
+    let videoId = "";
+    if (url.includes("youtube.com/watch")) {
+      const match = url.match(/[?&]v=([^&#]+)/);
+      if (match && match[1]) {
+        videoId = match[1];
+      }
+    } else if (url.includes("youtu.be/")) {
+      const parts = url.split("youtu.be/");
+      if (parts[1]) {
+        videoId = parts[1].split("?")[0].split("/")[0];
+      }
+    } else if (url.includes("youtube.com/embed/")) {
+      const parts = url.split("youtube.com/embed/");
+      if (parts[1]) {
+        videoId = parts[1].split("?")[0].split("/")[0];
+      }
+    }
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+    }
+  }
+
+  return url;
+}
+
+/**
+ * Resolve a video/thumbnail URL so the browser can always load it.
+ * Paths stored as relative `/api/storage/objects/...` are served by the
+ * Express API and proxied through Vite in development — they are valid
+ * as-is when loaded from the same origin.  Absolute https:// URLs are
+ * returned unchanged.
+ */
+function resolveMediaUrl(url: string | null | undefined): string | undefined {
+  if (!url) return undefined;
   // Already absolute — return as-is
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
   // Relative path starting with / — works from the same origin
@@ -65,6 +103,7 @@ function resolveMediaUrl(url: string | null | undefined): string | undefined {
   // Unexpected format — pass through and let the browser decide
   return url;
 }
+
 
 
 function formatDuration(s: number) {
@@ -661,6 +700,13 @@ export default function Watch() {
                     </Button>
                   </Link>
                 </div>
+              ) : isIframeVideo(video.videoUrl) ? (
+                <iframe
+                  src={getEmbedUrl(video.videoUrl)}
+                  className="w-full h-full border-0 aspect-video"
+                  allow="autoplay; encrypted-media; picture-in-picture"
+                  allowFullScreen
+                />
               ) : (
                 <>
                   <video
