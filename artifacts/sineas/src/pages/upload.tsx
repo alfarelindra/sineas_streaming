@@ -38,11 +38,16 @@ async function uploadFile(file: File, onProgress?: (pct: number) => void): Promi
 
   const { uploadUrl, objectPath } = await urlRes.json();
 
-  // Step 2: Upload file directly to Supabase via signed URL (PUT)
+  // Step 2: Upload file to Supabase via signed URL using FormData
+  // Supabase signed upload endpoint expects multipart/form-data (same as SDK internally)
   await new Promise<void>((resolve, reject) => {
+    const formData = new FormData();
+    formData.append("cacheControl", "3600");
+    formData.append("", file, file.name); // Supabase expects empty-string key for the file
+
     const xhr = new XMLHttpRequest();
     xhr.open("PUT", uploadUrl);
-    xhr.setRequestHeader("Content-Type", file.type);
+    // Do NOT set Content-Type manually — browser must auto-set it with multipart boundary
     xhr.upload.onprogress = (e) => {
       if (onProgress && e.total) {
         onProgress(Math.round((e.loaded / e.total) * 100));
@@ -52,12 +57,14 @@ async function uploadFile(file: File, onProgress?: (pct: number) => void): Promi
       if (xhr.status >= 200 && xhr.status < 300) {
         resolve();
       } else {
-        reject(new Error(`Upload gagal: HTTP ${xhr.status}`));
+        console.error("Supabase upload response:", xhr.status, xhr.responseText);
+        reject(new Error(`Upload gagal: HTTP ${xhr.status} — ${xhr.responseText}`));
       }
     };
     xhr.onerror = () => reject(new Error("Koneksi gagal saat upload"));
-    xhr.send(file);
+    xhr.send(formData);
   });
+
 
   // Step 3: Build public URL from objectPath
   // objectPath is the full public URL returned by normalizeObjectEntityPath
