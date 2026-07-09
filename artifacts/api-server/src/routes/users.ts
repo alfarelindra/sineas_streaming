@@ -9,8 +9,10 @@ import { clerkClient } from "@clerk/express";
 const router = Router();
 
 async function getOrCreateUser(clerkId: string, displayName?: string) {
+  // Step 1: check if already exists
   const [existing] = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
   if (existing) {
+    // Async-sync profile data from Clerk if incomplete (non-blocking)
     if (!existing.avatarUrl || existing.displayName === "Pengguna Sineas" || !existing.username) {
       try {
         const clerkUser = await clerkClient.users.getUser(clerkId);
@@ -30,43 +32,47 @@ async function getOrCreateUser(clerkId: string, displayName?: string) {
           })
           .where(eq(usersTable.clerkId, clerkId))
           .returning();
-        return updated;
+        return updated ?? existing;
       } catch (err) {
-        console.error("Gagal melakukan sinkronisasi dengan Clerk:", err);
+        console.error("Gagal sinkronisasi Clerk (non-fatal):", (err as Error)?.message);
+        return existing; // return what we have — don't fail the request
       }
     }
     return existing;
   }
 
-  let name = displayName?.trim();
-  let avatar: string | null = null;
-  let uName: string | null = null;
-  try {
-    const clerkUser = await clerkClient.users.getUser(clerkId);
-    name = name || [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ").trim()
-      || clerkUser.username
-      || clerkUser.emailAddresses[0]?.emailAddress?.split("@")[0]
-      || "Pengguna Sineas";
-    avatar = clerkUser.imageUrl || null;
-    uName = clerkUser.username || null;
-  } catch (err) {
-    console.error("Gagal mengambil data user dari Clerk saat pembuatan:", err);
-    name = name || "Pengguna Sineas";
-  }
-
+  // Step 2: Insert with default data FIRST — no Clerk API dependency
+  // This guarantees the row exists before we try to enrich it
+  const defaultName = displayName?.trim() || "Kreator Sineas";
   const [created] = await db.insert(usersTable).values({
     clerkId,
-    displayName: name,
-    avatarUrl: avatar,
-    username: uName,
+    displayName: defaultName,
+    avatarUrl: null,
+    username: null,
   }).onConflictDoNothing().returning();
 
-  // Another request may have raced — re-fetch if needed
-  if (!created) {
-    const [refetched] = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
-    return refetched;
+  // Step 3: Try to enrich with real Clerk profile data
+  const baseUser = created ?? (await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId)).then(r => r[0]));
+  if (!baseUser) return null; // shouldn't happen
+
+  try {
+    const clerkUser = await clerkClient.users.getUser(clerkId);
+    const name = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ").trim()
+      || clerkUser.username
+      || clerkUser.emailAddresses[0]?.emailAddress?.split("@")[0]
+      || defaultName;
+    const avatar = clerkUser.imageUrl || null;
+    const uName = clerkUser.username || null;
+
+    const [enriched] = await db.update(usersTable)
+      .set({ displayName: name, avatarUrl: avatar, username: uName, updatedAt: new Date() })
+      .where(eq(usersTable.clerkId, clerkId))
+      .returning();
+    return enriched ?? baseUser;
+  } catch (err) {
+    console.error("Gagal enrich user dari Clerk (non-fatal, menggunakan default):", (err as Error)?.message);
+    return baseUser; // Return the default-named user — still valid!
   }
-  return created;
 }
 
 // GET /users/me
@@ -192,37 +198,47 @@ router.delete("/users/watchlist/:videoId", requireAuth, async (req, res): Promis
 router.get("/creators/:id", async (req, res): Promise<void> => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const clerkId = decodeURIComponent(raw);
-  console.log("LOG AUTENTIKASI: Memulai pencarian profil kreator untuk ID:", clerkId);
+  console.log("[CREATOR PROFILE] Mencari profil untuk clerkId:", clerkId);
 
-  let user = null;
+  let user: typeof import("@workspace/db").usersTable.$inferSelect | null = null;
 
-  // Always attempt upsert for valid Clerk IDs
   if (clerkId.startsWith("user_")) {
+    // ── LEVEL 1: getOrCreateUser (insert default + try Clerk sync) ───────
     try {
-      user = await getOrCreateUser(clerkId);
-      console.log("LOG AUTENTIKASI: getOrCreateUser resolved:", user?.id);
+      user = await getOrCreateUser(clerkId) as any;
+      console.log("[CREATOR PROFILE] Level 1 OK - user.id:", user?.id);
     } catch (err) {
-      console.error("LOG AUTENTIKASI: Gagal memanggil getOrCreateUser:", err);
-      // Fallback: try direct DB lookup
+      console.error("[CREATOR PROFILE] Level 1 gagal:", (err as Error)?.message);
+    }
+
+    // ── LEVEL 2: Direct DB insert jika Level 1 gagal ─────────────────────
+    if (!user) {
       try {
-        const [found] = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
-        user = found ?? null;
+        console.log("[CREATOR PROFILE] Level 2 - direct insert fallback...");
+        await db.insert(usersTable).values({
+          clerkId,
+          displayName: "Kreator Sineas",
+          avatarUrl: null,
+          username: null,
+        }).onConflictDoNothing();
+        const [fetched] = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
+        user = fetched ?? null;
+        console.log("[CREATOR PROFILE] Level 2 OK - user.id:", user?.id);
       } catch (dbErr) {
-        console.error("LOG AUTENTIKASI: Fallback DB lookup gagal:", dbErr);
+        console.error("[CREATOR PROFILE] Level 2 gagal:", (dbErr as Error)?.message);
       }
     }
   } else {
-    // Non-Clerk ID: try DB lookup only
+    // Non-Clerk ID → DB lookup only
     try {
       const [found] = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
       user = found ?? null;
     } catch (err) {
-      console.error("LOG AUTENTIKASI: Gagal mencari user di database:", err);
+      console.error("[CREATOR PROFILE] DB lookup gagal:", (err as Error)?.message);
     }
   }
 
-  console.log("LOG AUTENTIKASI: Hasil pencarian user resolved:", user?.id ?? "null");
-
+  console.log("[CREATOR PROFILE] Final user:", user ? `id=${user.id} name=${user.displayName}` : "NULL");
 
   const [stats] = await db
     .select({
@@ -245,9 +261,10 @@ router.get("/creators/:id", async (req, res): Promise<void> => {
     displayName = firstVideo?.uploaderName;
   }
 
+  // Only return 404 if BOTH DB insert levels failed (DB unreachable)
   if (!user) {
-    console.warn("LOG AUTENTIKASI: Kreator tidak ditemukan di database setelah semua percobaan upsert");
-    res.status(404).json({ error: "Kreator tidak ditemukan" });
+    console.error("[CREATOR PROFILE] FATAL: Semua level upsert gagal untuk clerkId:", clerkId);
+    res.status(404).json({ error: "Kreator tidak ditemukan", clerkId });
     return;
   }
 
