@@ -192,16 +192,38 @@ router.delete("/users/watchlist/:videoId", requireAuth, async (req, res): Promis
 router.get("/creators/:id", async (req, res): Promise<void> => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const clerkId = decodeURIComponent(raw);
+  console.log("LOG AUTENTIKASI: Memulai pencarian profil kreator untuk ID:", clerkId);
 
-  let [user] = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
+  let user = null;
+  try {
+    const [found] = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
+    user = found;
+  } catch (err) {
+    console.error("LOG AUTENTIKASI: Gagal mencari user di database:", err);
+  }
 
   if (!user && clerkId.startsWith("user_")) {
     try {
+      console.log("LOG AUTENTIKASI: User tidak ditemukan di db, memanggil getOrCreateUser...");
       user = await getOrCreateUser(clerkId);
     } catch (err) {
-      console.error("Gagal melakukan auto-create user dari Clerk di route /creators/:id:", err);
+      console.error("LOG AUTENTIKASI: Gagal memanggil getOrCreateUser:", err);
+      // Fallback Direct DB Insert
+      try {
+        console.log("LOG AUTENTIKASI: Menjalankan fallback direct insert...");
+        await db.insert(usersTable).values({
+          clerkId,
+          displayName: "Kreator Sineas",
+        }).onConflictDoNothing();
+        const [refetched] = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
+        user = refetched;
+      } catch (dbErr) {
+        console.error("LOG AUTENTIKASI: Fallback direct insert gagal:", dbErr);
+      }
     }
   }
+
+  console.log("LOG AUTENTIKASI: Hasil pencarian user resolved:", user);
 
   const [stats] = await db
     .select({
@@ -225,6 +247,7 @@ router.get("/creators/:id", async (req, res): Promise<void> => {
   }
 
   if (!user && videoCount === 0) {
+    console.warn("LOG AUTENTIKASI: Kreator tidak ditemukan di database dan tidak ada video publik");
     res.status(404).json({ error: "Kreator tidak ditemukan" });
     return;
   }

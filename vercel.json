@@ -1,3 +1,7 @@
 {
-  "outputDirectory": "artifacts/sineas/dist/public"
+  "outputDirectory": "artifacts/sineas/dist/public",
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "handle": "filesystem" }
+  ]
 }
