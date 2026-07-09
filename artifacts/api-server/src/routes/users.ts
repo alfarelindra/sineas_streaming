@@ -195,35 +195,34 @@ router.get("/creators/:id", async (req, res): Promise<void> => {
   console.log("LOG AUTENTIKASI: Memulai pencarian profil kreator untuk ID:", clerkId);
 
   let user = null;
-  try {
-    const [found] = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
-    user = found;
-  } catch (err) {
-    console.error("LOG AUTENTIKASI: Gagal mencari user di database:", err);
-  }
 
-  if (!user && clerkId.startsWith("user_")) {
+  // Always attempt upsert for valid Clerk IDs
+  if (clerkId.startsWith("user_")) {
     try {
-      console.log("LOG AUTENTIKASI: User tidak ditemukan di db, memanggil getOrCreateUser...");
       user = await getOrCreateUser(clerkId);
+      console.log("LOG AUTENTIKASI: getOrCreateUser resolved:", user?.id);
     } catch (err) {
       console.error("LOG AUTENTIKASI: Gagal memanggil getOrCreateUser:", err);
-      // Fallback Direct DB Insert
+      // Fallback: try direct DB lookup
       try {
-        console.log("LOG AUTENTIKASI: Menjalankan fallback direct insert...");
-        await db.insert(usersTable).values({
-          clerkId,
-          displayName: "Kreator Sineas",
-        }).onConflictDoNothing();
-        const [refetched] = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
-        user = refetched;
+        const [found] = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
+        user = found ?? null;
       } catch (dbErr) {
-        console.error("LOG AUTENTIKASI: Fallback direct insert gagal:", dbErr);
+        console.error("LOG AUTENTIKASI: Fallback DB lookup gagal:", dbErr);
       }
+    }
+  } else {
+    // Non-Clerk ID: try DB lookup only
+    try {
+      const [found] = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
+      user = found ?? null;
+    } catch (err) {
+      console.error("LOG AUTENTIKASI: Gagal mencari user di database:", err);
     }
   }
 
-  console.log("LOG AUTENTIKASI: Hasil pencarian user resolved:", user);
+  console.log("LOG AUTENTIKASI: Hasil pencarian user resolved:", user?.id ?? "null");
+
 
   const [stats] = await db
     .select({
@@ -246,11 +245,12 @@ router.get("/creators/:id", async (req, res): Promise<void> => {
     displayName = firstVideo?.uploaderName;
   }
 
-  if (!user && videoCount === 0) {
-    console.warn("LOG AUTENTIKASI: Kreator tidak ditemukan di database dan tidak ada video publik");
+  if (!user) {
+    console.warn("LOG AUTENTIKASI: Kreator tidak ditemukan di database setelah semua percobaan upsert");
     res.status(404).json({ error: "Kreator tidak ditemukan" });
     return;
   }
+
 
   const [followers] = await db
     .select({ count: sql<number>`count(*)::int` })
