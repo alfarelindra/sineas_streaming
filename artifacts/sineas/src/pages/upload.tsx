@@ -93,6 +93,16 @@ export default function UploadPage() {
 
   const handleVideoFile = (f: File | null) => {
     if (!f) return;
+    const MAX_SIZE = 100 * 1024 * 1024; // 100MB limit for dev
+    if (f.size > MAX_SIZE) {
+      toast({
+        title: "File Terlalu Besar",
+        description: "Ukuran video maksimal adalah 100MB selama masa pengembangan.",
+        variant: "destructive"
+      });
+      if (videoInputRef.current) videoInputRef.current.value = "";
+      return;
+    }
     setVideoFile(f);
     const el = document.createElement("video");
     el.preload = "metadata";
@@ -101,6 +111,21 @@ export default function UploadPage() {
       setDuration(Math.round(el.duration));
       URL.revokeObjectURL(el.src);
     };
+  };
+
+  const handleThumbnailFile = (f: File | null) => {
+    if (!f) return;
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB limit
+    if (f.size > MAX_SIZE) {
+      toast({
+        title: "File Terlalu Besar",
+        description: "Ukuran thumbnail maksimal adalah 5MB.",
+        variant: "destructive"
+      });
+      if (thumbInputRef.current) thumbInputRef.current.value = "";
+      return;
+    }
+    setThumbnailFile(f);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -332,7 +357,7 @@ export default function UploadPage() {
                   onClick={() => thumbInputRef.current?.click()}
                   className={`flex-1 border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${thumbnailFile ? "border-yellow-400/50" : "border-border hover:border-border"}`}
                 >
-                  <input ref={thumbInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => setThumbnailFile(e.target.files?.[0] ?? null)} />
+                  <input ref={thumbInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleThumbnailFile(e.target.files?.[0] ?? null)} />
                   <Image className={`w-5 h-5 mx-auto mb-1 ${thumbnailFile ? "text-yellow-400" : "text-muted-foreground"}`} />
                   <p className="text-xs text-muted-foreground">{thumbnailFile ? thumbnailFile.name : "Upload gambar"}</p>
                 </div>

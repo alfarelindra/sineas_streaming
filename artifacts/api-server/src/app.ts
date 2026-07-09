@@ -91,8 +91,8 @@ app.post(
 // No special body parsing needed: Midtrans sends standard JSON
 
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "100mb" }));
+app.use(express.urlencoded({ limit: "100mb", extended: true }));
 
 app.use(clerkMiddleware());
 
@@ -105,5 +105,19 @@ app.use((req, res, next) => {
 });
 
 app.use("/api", router);
+
+// Global Error Handler for body-parser / request failures
+app.use((err: any, req: any, res: any, next: any) => {
+  if (err) {
+    logger.error({ err }, "Express request processing error");
+    if (err.status === 413) {
+      res.status(413).json({ error: "Payload Too Large: Batas ukuran file server terlampaui." });
+      return;
+    }
+    res.status(err.status || 500).json({ error: err.message || "Internal Server Error" });
+    return;
+  }
+  next();
+});
 
 export default app;
