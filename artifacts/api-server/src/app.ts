@@ -94,14 +94,7 @@ app.post(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(
-  clerkMiddleware((req) => ({
-    publishableKey: publishableKeyFromHost(
-      getClerkProxyHost(req) ?? "",
-      process.env.CLERK_PUBLISHABLE_KEY,
-    ),
-  })),
-);
+app.use(clerkMiddleware());
 
 // Resolve Clerk's legacy callable req.auth getter to its plain object value
 app.use((req, res, next) => {
