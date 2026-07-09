@@ -2,7 +2,7 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { ensureBucketExists } from "./lib/supabase";
+import { ensureBucketExists, SUPABASE_BUCKET } from "./lib/supabase";
 
 const rawPort = process.env["PORT"];
 
@@ -99,6 +99,7 @@ httpServer.listen(port, async (err?: any) => {
   }
 
   logger.info({ port }, "Server listening");
-  await ensureBucketExists("sineas-videos");
+  await ensureBucketExists(); // Uses SUPABASE_BUCKET_NAME env var (default: sineas-videos)
+  logger.info({ bucket: SUPABASE_BUCKET }, "Supabase bucket ready");
   await initStripe();
 });
