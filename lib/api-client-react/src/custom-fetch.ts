@@ -337,6 +337,8 @@ export async function customFetch<T = unknown>(
 
   const headers = mergeHeaders(isRequest(input) ? input.headers : undefined, headersInit);
 
+  headers.set("ngrok-skip-browser-warning", "true");
+
   if (
     typeof init.body === "string" &&
     !headers.has("content-type") &&

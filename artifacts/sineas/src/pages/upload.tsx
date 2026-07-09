@@ -17,17 +17,48 @@ const GENRES = ["Drama", "Aksi", "Komedi", "Horor", "Dokumenter", "Animasi", "Th
 
 type UploadStep = "form" | "uploading" | "done" | "error";
 
-async function uploadFile(file: File): Promise<string> {
+async function uploadFile(file: File, onProgress?: (pct: number) => void): Promise<string> {
   const base = import.meta.env.BASE_URL.replace(/\/$/, "");
   const res = await fetch(`${base}/api/storage/uploads/request-url`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "true"
+    },
     body: JSON.stringify({ filename: file.name, contentType: file.type }),
   });
   if (!res.ok) throw new Error("Gagal mendapatkan URL upload");
   const { uploadUrl, objectPath } = await res.json();
-  await fetch(uploadUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
-  return objectPath;
+
+  return new Promise<string>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", uploadUrl);
+    xhr.setRequestHeader("Content-Type", file.type);
+    
+    if (uploadUrl.startsWith("/") || uploadUrl.includes(window.location.hostname)) {
+      xhr.setRequestHeader("ngrok-skip-browser-warning", "true");
+    }
+
+    if (onProgress) {
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const pct = Math.round((event.loaded / event.total) * 100);
+          onProgress(pct);
+        }
+      };
+    }
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(objectPath);
+      } else {
+        reject(new Error(`Gagal mengunggah file: ${xhr.statusText || xhr.status}`));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error("Koneksi jaringan terputus saat mengunggah"));
+    xhr.send(file);
+  });
 }
 
 export default function UploadPage() {
@@ -92,20 +123,28 @@ export default function UploadPage() {
     }
 
     setStep("uploading");
-    setProgress(10);
+    setProgress(5);
 
     try {
       let finalVideoUrl = videoUrl;
       let finalThumbnailUrl = thumbnailUrl;
 
-      if (videoFile && !useDirectUrl) {
-        setProgress(20);
-        finalVideoUrl = await uploadFile(videoFile);
-        setProgress(60);
+      const hasVideo = !!(videoFile && !useDirectUrl);
+      const hasThumb = !!thumbnailFile;
+
+      if (hasVideo) {
+        finalVideoUrl = await uploadFile(videoFile!, (pct) => {
+          const weight = hasThumb ? 0.8 : 0.95;
+          setProgress(Math.round(pct * weight));
+        });
       }
-      if (thumbnailFile) {
-        finalThumbnailUrl = await uploadFile(thumbnailFile);
-        setProgress(80);
+
+      if (hasThumb) {
+        const startPct = hasVideo ? 80 : 5;
+        const weight = hasVideo ? 0.15 : 0.90;
+        finalThumbnailUrl = await uploadFile(thumbnailFile!, (pct) => {
+          setProgress(startPct + Math.round(pct * weight));
+        });
       }
 
       const created = await createVideo.mutateAsync({

@@ -6,6 +6,7 @@ import {
   useUnfollowCreator,
   useGetPlatformStats,
   useDeleteVideo,
+  useUpdateVideo,
 } from "@workspace/api-client-react";
 import Navbar from "@/components/Navbar";
 import VideoCard from "@/components/VideoCard";
@@ -13,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useParams, Link } from "wouter";
@@ -129,6 +131,102 @@ function DeleteConfirmModal({
             {isPending ? "Menghapus…" : "Ya, Hapus"}
           </Button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function EditVideoModal({
+  video,
+  onSave,
+  onCancel,
+  isPending,
+}: {
+  video: any;
+  onSave: (data: { title: string; description: string; isPublic: boolean }) => void;
+  onCancel: () => void;
+  isPending: boolean;
+}) {
+  const [title, setTitle] = useState(video.title || "");
+  const [description, setDescription] = useState(video.description || "");
+  const [isPublic, setIsPublic] = useState(video.isPublic ?? true);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({ title, description, isPublic });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        onClick={onCancel}
+      />
+      {/* Modal box */}
+      <div className="relative z-10 bg-card border border-border rounded-2xl p-6 max-w-md w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <h3 className="font-bold text-foreground text-lg mb-4 border-b border-border pb-3 flex items-center gap-2">
+          <Edit3 className="w-5 h-5 text-blue-400" />
+          Edit Detail Video
+        </h3>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="edit-title">Judul Video</Label>
+            <Input
+              id="edit-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              placeholder="Masukkan judul video..."
+              className="bg-muted border-border focus-visible:ring-blue-500"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="edit-desc">Deskripsi</Label>
+            <Textarea
+              id="edit-desc"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Masukkan deskripsi video..."
+              rows={4}
+              className="bg-muted border-border resize-none focus-visible:ring-blue-500"
+            />
+          </div>
+
+          <div className="flex items-center justify-between border-t border-border/60 pt-4 pb-1">
+            <div>
+              <Label htmlFor="edit-visibility" className="font-bold">Visibilitas Publik</Label>
+              <p className="text-xs text-muted-foreground">Aktifkan agar video dapat ditonton oleh semua orang</p>
+            </div>
+            <Switch
+              id="edit-visibility"
+              checked={isPublic}
+              onCheckedChange={setIsPublic}
+            />
+          </div>
+
+          <div className="flex gap-3 justify-end pt-4 border-t border-border">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onCancel}
+              disabled={isPending}
+              className="border-border text-muted-foreground hover:text-foreground"
+            >
+              Batal
+            </Button>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={isPending}
+              className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold gap-2"
+            >
+              {isPending ? "Menyimpan…" : "Simpan Perubahan"}
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -289,6 +387,36 @@ export default function CreatorPage() {
     );
   };
 
+  // Edit Video state
+  const [editingVideo, setEditingVideo] = useState<any | null>(null);
+  const updateVideoMutation = useUpdateVideo();
+
+  const handleEditSave = (data: { title: string; description: string; isPublic: boolean }) => {
+    if (!editingVideo) return;
+    updateVideoMutation.mutate(
+      {
+        id: editingVideo.id,
+        data: {
+          title: data.title,
+          description: data.description,
+          isPublic: data.isPublic,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast({ title: "Video berhasil diperbarui!" });
+          setEditingVideo(null);
+          refetchVideos();
+          queryClient.invalidateQueries({ queryKey: ["/api/videos"] });
+        },
+        onError: (err: any) => {
+          const msg = err?.data?.error ?? err?.message ?? "Gagal memperbarui video";
+          toast({ title: msg, variant: "destructive" });
+        },
+      }
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
@@ -300,6 +428,16 @@ export default function CreatorPage() {
           onConfirm={handleDeleteConfirm}
           onCancel={() => setDeletingId(null)}
           isPending={deleteVideo.isPending}
+        />
+      )}
+
+      {/* Edit Video Modal */}
+      {editingVideo && (
+        <EditVideoModal
+          video={editingVideo}
+          onSave={handleEditSave}
+          onCancel={() => setEditingVideo(null)}
+          isPending={updateVideoMutation.isPending}
         />
       )}
 
@@ -594,53 +732,77 @@ export default function CreatorPage() {
                     </div>
                   </div>
 
-                  {/* Video performance list with delete option */}
+                  {/* Video performance list with edit and delete options (YouTube Studio style) */}
                   <div>
                     <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4 text-blue-400" /> Performa Video
+                      <TrendingUp className="w-4 h-4 text-blue-400" /> Konten Channel
                     </h2>
                     {creatorVideos.length === 0 ? (
                       <div className="text-center py-10 bg-card/40 border border-border rounded-2xl text-muted-foreground text-sm">
-                        Belum ada video untuk dianalisis.
+                        Belum ada video di channel ini. Silakan unggah video baru!
                       </div>
                     ) : (
-                      <div className="bg-card/60 border border-border rounded-2xl overflow-hidden">
-                        <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-border text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                          <span>Judul</span>
-                          <span className="text-right">Tayangan</span>
-                          <span className="text-right">Like</span>
-                          <span className="text-right">Genre</span>
+                      <div className="bg-card/60 border border-border rounded-2xl overflow-hidden shadow-sm">
+                        <div className="grid grid-cols-[2.5fr_3fr_1.2fr_1.5fr_1fr] gap-4 px-5 py-3.5 border-b border-border text-xs text-muted-foreground font-bold uppercase tracking-wider items-center bg-muted/30">
+                          <span>Video</span>
+                          <span>Deskripsi</span>
+                          <span>Visibilitas</span>
+                          <span>Tanggal</span>
                           <span className="text-center">Aksi</span>
                         </div>
 
                         {creatorVideos.map((v: any) => (
                           <div
                             key={v.id}
-                            className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-border hover:bg-accent/40 transition-colors items-center text-sm"
+                            className="grid grid-cols-[2.5fr_3fr_1.2fr_1.5fr_1fr] gap-4 px-5 py-4 border-b border-border/60 hover:bg-accent/30 transition-colors items-center text-sm"
                           >
                             <Link href={`/watch/${v.id}`} className="flex items-center gap-3 min-w-0 group">
                               {v.thumbnailUrl ? (
-                                <img src={v.thumbnailUrl} className="w-12 h-8 object-cover rounded flex-shrink-0" alt={v.title} />
+                                <img src={v.thumbnailUrl} className="w-14 h-9 object-cover rounded-md flex-shrink-0 border border-border/20 shadow-sm" alt={v.title} />
                               ) : (
-                                <div className="w-12 h-8 bg-muted rounded flex-shrink-0 flex items-center justify-center">
+                                <div className="w-14 h-9 bg-muted rounded-md flex-shrink-0 flex items-center justify-center border border-border/20">
                                   <Play className="w-4 h-4 text-muted-foreground" />
                                 </div>
                               )}
-                              <span className="font-semibold text-foreground group-hover:text-yellow-400 transition-colors truncate">
+                              <span className="font-semibold text-foreground group-hover:text-yellow-400 transition-colors truncate" title={v.title}>
                                 {v.title}
                               </span>
                             </Link>
-                            <span className="text-right font-medium text-foreground">{formatNum(v.viewCount ?? 0)}</span>
-                            <span className="text-right font-medium text-foreground">{formatNum(v.likeCount ?? 0)}</span>
-                            <span className="text-right text-muted-foreground">{v.genre ?? "-"}</span>
-                            <div className="flex justify-center">
+                            <span className="text-muted-foreground line-clamp-2 pr-4 text-xs">
+                              {v.description ? v.description : <span className="italic opacity-60">Tidak ada deskripsi</span>}
+                            </span>
+                            <div>
+                              {v.isPublic ? (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-500/10 text-green-400 border border-green-500/20">
+                                  Publik
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-400/10 text-yellow-400 border border-yellow-400/20">
+                                  Privat
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-muted-foreground text-xs font-medium">
+                              {v.createdAt ? new Date(v.createdAt).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" }) : "-"}
+                            </span>
+                            <div className="flex justify-center items-center gap-1.5">
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => setEditingVideo(v)}
+                                className="w-8 h-8 rounded-lg hover:bg-blue-500/10 hover:text-blue-400 text-muted-foreground transition-colors"
+                                title="Edit Detail Video"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </Button>
                               <Button
                                 size="icon"
                                 variant="ghost"
                                 onClick={() => setDeletingId(v.id)}
                                 className="w-8 h-8 rounded-lg hover:bg-red-500/10 hover:text-red-400 text-muted-foreground transition-colors"
+                                title="Hapus Video"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-3.5 h-3.5" />
                               </Button>
                             </div>
                           </div>

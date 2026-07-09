@@ -41,7 +41,12 @@ export class ObjectNotFoundError extends Error {
 export class ObjectStorageService {
   constructor() {}
 
+  isSupabase(): boolean {
+    return !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+  }
+
   isLocal(): boolean {
+    if (this.isSupabase()) return false;
     return !process.env.PRIVATE_OBJECT_DIR;
   }
 
@@ -137,6 +142,18 @@ export class ObjectStorageService {
   }
 
   async getObjectEntityUploadURL(): Promise<string> {
+    if (this.isSupabase()) {
+      const objectId = randomUUID();
+      const filePath = `uploads/${objectId}`;
+      const { supabaseAdmin } = await import("./supabase");
+      const { data, error } = await supabaseAdmin.storage
+        .from("sineas-videos")
+        .createSignedUploadUrl(filePath);
+      if (error) {
+        throw error;
+      }
+      return data.signedUrl;
+    }
     if (this.isLocal()) {
       const objectId = randomUUID();
       return `/api/storage/local-upload?id=${objectId}`;
@@ -204,6 +221,17 @@ export class ObjectStorageService {
   }
 
   normalizeObjectEntityPath(rawPath: string): string {
+    if (this.isSupabase()) {
+      // Reconstruct the public direct Supabase URL from the signed upload URL
+      if (rawPath.includes(".supabase.co/")) {
+        if (rawPath.includes("/uploads/")) {
+          const parts = rawPath.split("/uploads/");
+          const id = parts[1].split("?")[0];
+          return `https://rvnfudoqiseujbwzjqfo.supabase.co/storage/v1/object/public/sineas-videos/uploads/${id}`;
+        }
+      }
+      return rawPath;
+    }
     if (this.isLocal()) {
       if (rawPath.includes("/api/storage/local-upload?id=")) {
         const id = rawPath.split("?id=")[1];
@@ -237,7 +265,7 @@ export class ObjectStorageService {
     aclPolicy: ObjectAclPolicy
   ): Promise<string> {
     const normalizedPath = this.normalizeObjectEntityPath(rawPath);
-    if (this.isLocal()) {
+    if (this.isSupabase() || this.isLocal()) {
       return normalizedPath;
     }
     if (!normalizedPath.startsWith("/")) {
