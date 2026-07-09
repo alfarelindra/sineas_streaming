@@ -1,6 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
+﻿import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = "https://rvnfudoqiseujbwzjqfo.supabase.co";
+const supabaseUrl = process.env.SUPABASE_URL ?? "https://rvnfudoqiseujbwzjqfo.supabase.co";
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseServiceKey) {
@@ -14,7 +14,10 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
   },
 });
 
-export async function ensureBucketExists(bucketName: string = "sineas-videos") {
+/** Bucket name for all Sineas video/image uploads. Reads from SUPABASE_BUCKET_NAME env var. */
+export const SUPABASE_BUCKET = process.env.SUPABASE_BUCKET_NAME ?? "sineas-videos";
+
+export async function ensureBucketExists(bucketName: string = SUPABASE_BUCKET) {
   try {
     const { data: buckets, error: listError } = await supabaseAdmin.storage.listBuckets();
     if (listError) throw listError;
@@ -23,7 +26,7 @@ export async function ensureBucketExists(bucketName: string = "sineas-videos") {
     if (!exists) {
       console.log(`Creating Supabase Storage bucket: ${bucketName}...`);
       const { error: createError } = await supabaseAdmin.storage.createBucket(bucketName, {
-        public: true, // Make the bucket public so public URLs can access it
+        public: true,
       });
       if (createError) throw createError;
       console.log(`Bucket ${bucketName} created successfully!`);

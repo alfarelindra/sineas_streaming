@@ -12,7 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { Upload as UploadIcon, Film, Image, CheckCircle2, AlertCircle, Link as LinkIcon, Play, Crown, Users, Info } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
+import { supabase, VITE_BUCKET } from "@/lib/supabase";
 
 const GENRES = ["Drama", "Aksi", "Komedi", "Horor", "Dokumenter", "Animasi", "Thriller", "Romantis"];
 
@@ -21,7 +21,7 @@ type UploadStep = "form" | "uploading" | "done" | "error";
 async function uploadFile(file: File, onProgress?: (pct: number) => void): Promise<string> {
   const filePath = `uploads/${Date.now()}_${file.name}`;
   const { data, error } = await supabase.storage
-    .from("sineas-videos")
+    .from(VITE_BUCKET)
     .upload(filePath, file, {
       cacheControl: "3600",
       upsert: false,
@@ -39,7 +39,7 @@ async function uploadFile(file: File, onProgress?: (pct: number) => void): Promi
   }
 
   const { data: { publicUrl } } = supabase.storage
-    .from("sineas-videos")
+    .from(VITE_BUCKET)
     .getPublicUrl(data.path);
 
   return publicUrl;

@@ -10,6 +10,7 @@ import {
   getObjectAclPolicy,
   setObjectAclPolicy,
 } from "./objectAcl";
+import { SUPABASE_BUCKET } from "./supabase";
 
 const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
 
@@ -147,7 +148,7 @@ export class ObjectStorageService {
       const filePath = `uploads/${objectId}`;
       const { supabaseAdmin } = await import("./supabase");
       const { data, error } = await supabaseAdmin.storage
-        .from("sineas-videos")
+        .from(SUPABASE_BUCKET)
         .createSignedUploadUrl(filePath);
       if (error) {
         throw error;
@@ -227,7 +228,8 @@ export class ObjectStorageService {
         if (rawPath.includes("/uploads/")) {
           const parts = rawPath.split("/uploads/");
           const id = parts[1].split("?")[0];
-          return `https://rvnfudoqiseujbwzjqfo.supabase.co/storage/v1/object/public/sineas-videos/uploads/${id}`;
+          const supabaseUrl = process.env.SUPABASE_URL ?? "https://rvnfudoqiseujbwzjqfo.supabase.co";
+          return `${supabaseUrl}/storage/v1/object/public/${SUPABASE_BUCKET}/uploads/${id}`;
         }
       }
       return rawPath;

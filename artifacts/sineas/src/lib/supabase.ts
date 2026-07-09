@@ -1,8 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://rvnfudoqiseujbwzjqfo.supabase.co";
-// Use the service role key as client-side key for Dev/finalization to bypass RLS policies
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2bmZ1ZG9xaXNldWpid3pqcWZvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MzU0NjMzMSwiZXhwIjoyMDk5MTIyMzMxfQ.V1GcwL-IoN6Y0DaUYiKOnAHD6BBoNO7WtJ-dUHCRA-U";
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? "https://rvnfudoqiseujbwzjqfo.supabase.co";
+// VITE_SUPABASE_ANON_KEY (or service key for dev) — set this in Vercel environment variables
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY ?? "";
+
+/** Bucket name — must match what's in VITE_SUPABASE_BUCKET (Vercel env) or defaults to sineas-videos */
+export const VITE_BUCKET = import.meta.env.VITE_SUPABASE_BUCKET ?? "sineas-videos";
 
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
@@ -10,3 +13,4 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     autoRefreshToken: false,
   },
 });
+
