@@ -38,6 +38,26 @@ import { useQuery, useMutation } from "@tanstack/react-query";
  */
 function resolveMediaUrl(url: string | null | undefined): string | undefined {
   if (!url) return undefined;
+
+  // Auto-convert Google Drive sharing link to a direct stream/download source
+  if (url.includes("drive.google.com")) {
+    let fileId = "";
+    if (url.includes("/file/d/")) {
+      const parts = url.split("/file/d/");
+      if (parts[1]) {
+        fileId = parts[1].split("/")[0].split("?")[0];
+      }
+    } else if (url.includes("?id=") || url.includes("&id=")) {
+      const match = url.match(/[?&]id=([^&#]+)/);
+      if (match && match[1]) {
+        fileId = match[1];
+      }
+    }
+    if (fileId) {
+      return `https://docs.google.com/uc?export=download&id=${fileId}`;
+    }
+  }
+
   // Already absolute — return as-is
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
   // Relative path starting with / — works from the same origin
@@ -45,6 +65,7 @@ function resolveMediaUrl(url: string | null | undefined): string | undefined {
   // Unexpected format — pass through and let the browser decide
   return url;
 }
+
 
 function formatDuration(s: number) {
   const h = Math.floor(s / 3600);
