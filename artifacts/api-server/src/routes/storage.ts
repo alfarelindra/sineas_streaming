@@ -29,6 +29,14 @@ router.post("/storage/uploads/request-url", async (req: Request, res: Response) 
   try {
     const { filename, contentType } = parsed.data;
 
+    // Ensure the bucket exists before trying to create a signed URL.
+    // This is critical on Vercel (serverless) where the server startup
+    // ensureBucketExists() may not have run yet.
+    if (objectStorageService.isSupabase()) {
+      const { ensureBucketExists } = await import("../lib/supabase");
+      await ensureBucketExists();
+    }
+
     const uploadURL = await objectStorageService.getObjectEntityUploadURL();
     const objectPath = objectStorageService.normalizeObjectEntityPath(uploadURL);
 
@@ -43,6 +51,7 @@ router.post("/storage/uploads/request-url", async (req: Request, res: Response) 
     res.status(500).json({ error: "Failed to generate upload URL" });
   }
 });
+
 
 /**
  * PUT /storage/local-upload

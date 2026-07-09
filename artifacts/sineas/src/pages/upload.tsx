@@ -12,37 +12,61 @@ import { Progress } from "@/components/ui/progress";
 import { Upload as UploadIcon, Film, Image, CheckCircle2, AlertCircle, Link as LinkIcon, Play, Crown, Users, Info } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
-import { supabase, VITE_BUCKET } from "@/lib/supabase";
+import { VITE_BUCKET } from "@/lib/supabase";
 
 const GENRES = ["Drama", "Aksi", "Komedi", "Horor", "Dokumenter", "Animasi", "Thriller", "Romantis"];
 
 type UploadStep = "form" | "uploading" | "done" | "error";
 
+/**
+ * Upload file via backend signed URL — uses service role key server-side,
+ * so RLS policies and bucket existence are handled automatically.
+ */
 async function uploadFile(file: File, onProgress?: (pct: number) => void): Promise<string> {
-  const filePath = `uploads/${Date.now()}_${file.name}`;
-  const { data, error } = await supabase.storage
-    .from(VITE_BUCKET)
-    .upload(filePath, file, {
-      cacheControl: "3600",
-      upsert: false,
-      onUploadProgress: (progressEvent: any) => {
-        if (onProgress && progressEvent.total) {
-          const pct = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-          onProgress(pct);
-        }
-      }
-    } as any);
+  // Step 1: Request a signed upload URL from our backend
+  const urlRes = await fetch("/api/storage/uploads/request-url", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ filename: file.name, contentType: file.type }),
+  });
 
-  if (error) {
-    console.error("Direct upload SDK error:", error);
-    throw new Error(`Gagal mengunggah file: ${error.message}`);
+  if (!urlRes.ok) {
+    const err = await urlRes.json().catch(() => ({ error: "Gagal mendapatkan URL upload" }));
+    throw new Error(err.error ?? "Gagal mendapatkan URL upload dari server");
   }
 
-  const { data: { publicUrl } } = supabase.storage
-    .from(VITE_BUCKET)
-    .getPublicUrl(data.path);
+  const { uploadUrl, objectPath } = await urlRes.json();
 
-  return publicUrl;
+  // Step 2: Upload file directly to Supabase via signed URL (PUT)
+  await new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", uploadUrl);
+    xhr.setRequestHeader("Content-Type", file.type);
+    xhr.upload.onprogress = (e) => {
+      if (onProgress && e.total) {
+        onProgress(Math.round((e.loaded / e.total) * 100));
+      }
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve();
+      } else {
+        reject(new Error(`Upload gagal: HTTP ${xhr.status}`));
+      }
+    };
+    xhr.onerror = () => reject(new Error("Koneksi gagal saat upload"));
+    xhr.send(file);
+  });
+
+  // Step 3: Build public URL from objectPath
+  // objectPath is the full public URL returned by normalizeObjectEntityPath
+  if (objectPath.startsWith("http")) {
+    return objectPath;
+  }
+  // Fallback: construct Supabase public URL
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? "https://rvnfudoqiseujbwzjqfo.supabase.co";
+  return `${supabaseUrl}/storage/v1/object/public/${VITE_BUCKET}/${objectPath.replace(/^\//, "")}`;
 }
 
 
