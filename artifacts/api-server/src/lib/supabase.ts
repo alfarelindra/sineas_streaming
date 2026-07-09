@@ -25,12 +25,17 @@ export async function ensureBucketExists(bucketName: string = SUPABASE_BUCKET) {
     const exists = buckets.some((b) => b.name === bucketName);
     if (!exists) {
       console.log(`Creating Supabase Storage bucket: ${bucketName}...`);
+      // Create bucket with default public: true. We do NOT hardcode a small fileSizeLimit
+      // here to allow the developer to increase it via Supabase Dashboard Settings
+      // without this code resetting it on every restart/request.
       const { error: createError } = await supabaseAdmin.storage.createBucket(bucketName, {
         public: true,
       });
       if (createError) throw createError;
       console.log(`Bucket ${bucketName} created successfully!`);
     } else {
+      // Bucket exists, do nothing so we preserve any custom file size limits
+      // configured in the Supabase Dashboard.
       console.log(`Bucket ${bucketName} already exists.`);
     }
   } catch (err) {
